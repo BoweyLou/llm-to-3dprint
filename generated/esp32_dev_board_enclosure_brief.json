@@ -1,0 +1,52 @@
+{
+  "name": "esp32_dev_board_enclosure",
+  "description": "Two-part enclosure for a generic ESP32 development board with a USB-side cable opening and friction-fit lid.",
+  "object_type": "enclosure",
+  "library": "cadquery",
+  "units": "mm",
+  "base_shape": "rectangular",
+  "internal_dimensions": {
+    "length": 66.0,
+    "width": 39.0,
+    "height": 19.0
+  },
+  "wall_thickness": 2.4,
+  "base_thickness": 2.8,
+  "fillet_radius": 2.0,
+  "lid_style": "friction_lid",
+  "closure": {
+    "type": "friction_lid",
+    "insert_depth": 4.0,
+    "target_clearance": 0.35,
+    "assembled_orientation": "lip_down",
+    "print_orientation": "styled_face_down",
+    "supports_allowed": false,
+    "decorate_exterior_only": true,
+    "notes": "The simple lid is intended to print flat without supports."
+  },
+  "requirements": [
+    "Assume a generic ESP32 dev board envelope of roughly 52 x 29 x 14 mm.",
+    "Keep the enclosure printable without supports with the base and lid printed separately.",
+    "Provide a USB cable cutout on one short wall.",
+    "Use parameterized dimensions so board fit can be adjusted quickly."
+  ],
+  "cutouts": [
+    {
+      "name": "usb_opening",
+      "face": "left",
+      "shape": "rectangular",
+      "x": 0.0,
+      "y": 0.0,
+      "z": 10.8,
+      "width": 12.0,
+      "height": 8.0,
+      "depth": 4.0,
+      "notes": "Generic USB opening centered on the short wall."
+    }
+  ],
+  "mounting_holes": [],
+  "notes": [
+    "Default dimensions are intended for a common ESP32 dev board and should be adjusted for the exact PCB.",
+    "The custom generated script adds board support pads, corner locators, and a friction-fit lid."
+  ]
+}

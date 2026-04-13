@@ -1,0 +1,82 @@
+{
+  "name": "rectangular_enclosure_demo",
+  "description": "Open-top electronics enclosure with a front display cutout and four base mounting holes.",
+  "object_type": "enclosure",
+  "library": "cadquery",
+  "units": "mm",
+  "base_shape": "rectangular",
+  "internal_dimensions": {
+    "length": 80.0,
+    "width": 50.0,
+    "height": 25.0
+  },
+  "wall_thickness": 2.0,
+  "base_thickness": 2.5,
+  "fillet_radius": 2.0,
+  "lid_style": "open_top",
+  "requirements": [
+    "Keep the interior footprint clear for a PCB and wiring.",
+    "Avoid overhangs that require support in a standard FDM print orientation.",
+    "Use relative references wherever possible."
+  ],
+  "cutouts": [
+    {
+      "name": "front_display",
+      "face": "front",
+      "shape": "rectangular",
+      "x": 0.0,
+      "y": 0.0,
+      "z": 14.0,
+      "width": 40.0,
+      "height": 20.0,
+      "depth": 4.0,
+      "notes": "Centered display or label window."
+    },
+    {
+      "name": "side_cable",
+      "face": "right",
+      "shape": "circular",
+      "x": 0.0,
+      "y": 0.0,
+      "z": 9.0,
+      "diameter": 8.0,
+      "depth": 4.0,
+      "notes": "Cable pass-through on the right wall."
+    }
+  ],
+  "mounting_holes": [
+    {
+      "name": "front_left",
+      "x": -28.0,
+      "y": 16.0,
+      "diameter": 3.2,
+      "depth": 3.0
+    },
+    {
+      "name": "front_right",
+      "x": 28.0,
+      "y": 16.0,
+      "diameter": 3.2,
+      "depth": 3.0
+    },
+    {
+      "name": "rear_left",
+      "x": -28.0,
+      "y": -16.0,
+      "diameter": 3.2,
+      "depth": 3.0
+    },
+    {
+      "name": "rear_right",
+      "x": 28.0,
+      "y": -16.0,
+      "diameter": 3.2,
+      "depth": 3.0
+    }
+  ],
+  "notes": [
+    "Origin is centered in X and Y, with Z measured from the base upward.",
+    "This preset is deliberately simple and meant as a starting point."
+  ]
+}
+

@@ -1,0 +1,56 @@
+{
+  "name": "esp32_dev_board_enclosure_retro_futurist",
+  "description": "Retro-futurist enclosure for a generic ESP32 development board with a hybrid-color A1-friendly lid, functional top vents, and equipment-style wall detailing.",
+  "object_type": "enclosure",
+  "library": "cadquery",
+  "units": "mm",
+  "base_shape": "rectangular",
+  "internal_dimensions": {
+    "length": 66.0,
+    "width": 39.0,
+    "height": 19.0
+  },
+  "wall_thickness": 2.6,
+  "base_thickness": 3.0,
+  "fillet_radius": 3.0,
+  "lid_style": "friction_lid",
+  "closure": {
+    "type": "friction_lid",
+    "insert_depth": 4.2,
+    "target_clearance": 0.35,
+    "assembled_orientation": "lip_down",
+    "print_orientation": "flat_top_down_for_main_lid",
+    "supports_allowed": false,
+    "decorate_exterior_only": true,
+    "notes": "The structural lid prints as a flat shell, small color inserts can print in-place with the lid, and the vent shroud remains a separate side-by-side accent part."
+  },
+  "requirements": [
+    "Preserve the same generic ESP32 dev-board fit as the plain enclosure variant.",
+    "Make the exterior feel retro-futurist with recessed panels and control-console cues.",
+    "Keep the base and structural lid printable without supports.",
+    "Provide a hybrid second-color strategy: small in-place lid inserts plus a separate side-by-side vent shroud accent.",
+    "Retain a USB cable opening on one short wall."
+  ],
+  "cutouts": [
+    {
+      "name": "usb_opening",
+      "face": "left",
+      "shape": "rectangular",
+      "x": 0.0,
+      "y": 0.0,
+      "z": 11.25,
+      "width": 12.5,
+      "height": 8.5,
+      "depth": 4.0,
+      "notes": "Centered USB opening with a recessed service-frame surround."
+    }
+  ],
+  "mounting_holes": [],
+  "notes": [
+    "The custom script keeps the same internal board envelope and support strategy as the simpler enclosure.",
+    "The lid vents are real through-openings.",
+    "Badge, dial, and bolt details are modeled as flush in-place color inserts for same-object multi-color printing.",
+    "The vent shroud is a separate side-by-side accent part.",
+    "Exterior styling is Fallout-inspired without copying any specific in-world asset one-to-one."
+  ]
+}

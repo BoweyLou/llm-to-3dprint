@@ -1,0 +1,62 @@
+{
+  "name": "esp32_retro_futurist_a1_handoff",
+  "description": "Bambu Studio handoff for the retro-futurist ESP32 enclosure using a hybrid two-color workflow on an A1 with AMS lite.",
+  "target_printer": "A1",
+  "nozzle_diameter": 0.4,
+  "ams": "ams_lite",
+  "filament_count": 2,
+  "export_backend": "bambu_studio_cli",
+  "output_3mf": "generated/output/esp32_dev_board_enclosure_retro_futurist_a1_profile.3mf",
+  "seed_template_3mf": "generated/output/esp32_dev_board_enclosure_retro_futurist_a1_seed_template.3mf",
+  "source_brief": "generated/esp32_dev_board_enclosure_retro_futurist_brief.json",
+  "parts": [
+    {
+      "name": "retro_lid_shell",
+      "path": "generated/output/esp32_dev_board_enclosure_retro_futurist_lid_shell.step",
+      "object_name": "retro_lid",
+      "part_name": "lid_shell",
+      "load_strategy": "merge_as_parts",
+      "print_mode": "in_place_multicolor",
+      "plate": 1,
+      "filament": 1,
+      "notes": "Main lid body for filament 1."
+    },
+    {
+      "name": "retro_lid_inserts",
+      "path": "generated/output/esp32_dev_board_enclosure_retro_futurist_lid_inserts.step",
+      "object_name": "retro_lid",
+      "part_name": "lid_inserts",
+      "load_strategy": "merge_as_parts",
+      "print_mode": "in_place_multicolor",
+      "plate": 1,
+      "filament": 2,
+      "notes": "In-place color accents for filament 2."
+    },
+    {
+      "name": "retro_lid_accent",
+      "path": "generated/output/esp32_dev_board_enclosure_retro_futurist_lid_accent.stl",
+      "part_name": "lid_accent",
+      "load_strategy": "separate_object",
+      "print_mode": "side_by_side_accent",
+      "plate": 1,
+      "filament": 2,
+      "notes": "Separate printed accent that stays side-by-side on the plate."
+    },
+    {
+      "name": "retro_base",
+      "path": "generated/output/esp32_dev_board_enclosure_retro_futurist_base.stl",
+      "part_name": "base",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 2,
+      "filament": 1,
+      "notes": "Base printed on its own plate to keep the lid workflow clean."
+    }
+  ],
+  "notes": [
+    "Use Bambu Studio as the final 3MF serializer. Raw STEP/STL imports are only geometry handoff.",
+    "The preferred automation path is Studio GUI or an MCP wrapper that drives Studio end-to-end.",
+    "Use Studio CLI only on hosts where --export-3mf has been verified to work without crashing.",
+    "seed_template_3mf is optional but recommended for repeatable A1 + AMS lite output. It should point to a known-good Studio-authored project template."
+  ]
+}

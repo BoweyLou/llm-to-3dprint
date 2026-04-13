@@ -1,0 +1,36 @@
+{
+  "name": "friction_lid_enclosure_demo",
+  "description": "Electronics enclosure brief with explicit closure metadata for a friction-fit lid.",
+  "object_type": "enclosure",
+  "library": "cadquery",
+  "units": "mm",
+  "base_shape": "rectangular",
+  "internal_dimensions": {
+    "length": 66.0,
+    "width": 39.0,
+    "height": 19.0
+  },
+  "wall_thickness": 2.4,
+  "base_thickness": 2.8,
+  "fillet_radius": 2.0,
+  "lid_style": "friction_lid",
+  "closure": {
+    "type": "friction_lid",
+    "insert_depth": 4.2,
+    "target_clearance": 0.35,
+    "assembled_orientation": "lip_down",
+    "print_orientation": "styled_face_up",
+    "supports_allowed": true,
+    "decorate_exterior_only": true,
+    "notes": "Keep the exterior styling on the opposite side of the mating lip."
+  },
+  "requirements": [
+    "Preserve the internal fit while allowing the exterior shell to be restyled.",
+    "Make the closure geometry explicit enough for automated fit checks."
+  ],
+  "cutouts": [],
+  "mounting_holes": [],
+  "notes": [
+    "This example demonstrates closure metadata rather than a full board-specific part."
+  ]
+}
