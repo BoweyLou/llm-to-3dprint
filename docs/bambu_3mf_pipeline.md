@@ -91,8 +91,8 @@ The Studio CLI path is not hypothetical anymore, but it has hard current limits:
 
 - multipart CLI assembly uses mesh inputs for assembly, not `STEP`
 - the driver therefore resolves grouped parts to `.stl` or `.obj`
-- on this Mac, `BambuStudio 02.05.00.66` still crashes during `--export-3mf`, even after loading valid A1 presets
-- GUI export is validated for the grouped in-place multicolor object on this Mac, but it needs assistive-access permission for the calling process. When a valid `seed_template_3mf` is configured, the exporter now skips the grouped import flow and patches directly from that seed template. The merge-confirmation step now supports `auto`, `swift`, and `hammerspoon` click backends, with `auto` preferring Hammerspoon when it is installed and its CLI is ready
+- in current local macOS validation, `BambuStudio 02.05.00.66` still crashes during `--export-3mf`, even after loading valid A1 presets
+- GUI export is validated for the grouped in-place multicolor object on a macOS host with accessibility access enabled. When a valid `seed_template_3mf` is configured, the exporter now skips the grouped import flow and patches directly from that seed template. The merge-confirmation step now supports `auto`, `swift`, and `hammerspoon` click backends, with `auto` preferring Hammerspoon when it is installed and its CLI is ready
 - the GUI exporter does not yet serialize the full hybrid project with separate accent/base objects in one pass
 - the new patch command is the most reliable way to repair a Studio-authored `.3mf` that already exists on disk
 - the patch command currently targets single-nozzle Studio projects where object names or source filenames match the Bambu handoff spec
