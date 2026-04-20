@@ -1,6 +1,6 @@
 # Privacy Sweep
 
-Last reviewed: 2026-04-14
+Last reviewed: 2026-04-20
 
 ## Scope
 
@@ -19,6 +19,7 @@ The repo was checked for:
 - `src/` and `tests/`
 - tracked generated scripts and example outputs
 - internal text metadata inside tracked `.3mf` files
+- both commits currently in public-facing Git history
 
 ## Findings
 
@@ -29,6 +30,7 @@ The repo was checked for:
 - The only absolute path found in source is a synthetic test fixture path in `tests/test_bambu_mcp.py`:
   - `/Users/test/.hammerspoon/init.lua`
   - This is a fake path used for test coverage, not a real local path.
+- Git history was checked across both existing commits before changing repository visibility.
 
 ## Remediation Applied
 

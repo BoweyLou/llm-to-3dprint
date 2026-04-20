@@ -28,16 +28,16 @@ The repo is intentionally opinionated. It is strongest today for rectangular enc
 - Full hybrid Bambu project packaging in one saved `.3mf`
 - Geometry generation outside enclosure-style part families
 
-## Private Review Scope
+## Current Scope
 
-This repo is currently meant to review four things:
+This public repo is currently focused on four things:
 
-1. Whether the brief -> prompt -> CAD-script workflow is usable.
-2. Whether enclosure fit checking is a meaningful guardrail.
-3. Whether Bambu handoff specs are the right abstraction for multicolor output.
-4. Whether the current Bambu Studio automation approach is worth hardening.
+1. A structured brief -> prompt -> CAD-script workflow for enclosure-style parts.
+2. Mechanical fit validation for seated lids.
+3. A backend-aware multicolor handoff model for Bambu workflows.
+4. Local tooling and MCP support for driving that workflow end to end.
 
-It is not yet positioned as a polished end-user product, a general-purpose CAD engine, or a cross-platform slicer automation layer.
+It is not positioned as a general-purpose CAD engine, a polished consumer app, or a cross-platform slicer automation layer.
 
 ## Quick Start
 
@@ -180,7 +180,7 @@ Current MCP tools:
 - `src/llm_to_3dprint/bambu.py`: Bambu handoff schema, validation, patch helpers, and export orchestration
 - `src/llm_to_3dprint/bambu_mcp_server.py`: local MCP server over the Bambu workflow
 - `tests/`: focused tests for schemas, fit checks, renderers, and Bambu paths
-- `generated/`: reviewable example inputs, scripts, and output artifacts
+- `generated/`: a small demo set of generated scripts and representative output artifacts
 
 ## Design Notes
 
