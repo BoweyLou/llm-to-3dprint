@@ -1,0 +1,31 @@
+{
+  "name": "robot_vac_threshold_ramp",
+  "units": "mm",
+  "purpose": "Modular one-sided threshold ramp for robot vacuums crossing a 680 mm wide, 30 mm high doorway threshold.",
+  "target_printer": {
+    "model": "Bambu Lab A1",
+    "build_volume": [256, 256, 256],
+    "max_segment_width": 230
+  },
+  "dimensions": {
+    "total_width": 680,
+    "threshold_height": 30,
+    "ramp_run_depth": 72.5,
+    "top_landing_depth": 17.5,
+    "segment_count": 3,
+    "nominal_segment_width": 226.4
+  },
+  "features": [
+    "three printable ramp segments",
+    "compact one-sided 1:2.4 slope",
+    "hidden underside connector keys across each seam",
+    "shallow top traction ribs",
+    "flat bottom for tape or friction placement"
+  ],
+  "assumptions": [
+    "single-sided ramp from floor up to threshold",
+    "PETG preferred; PLA acceptable for indoor proof-of-fit",
+    "segments are held together by underside keys, not brittle snap clips",
+    "final doorway fit may need tuning after measuring available floor depth"
+  ]
+}

@@ -94,6 +94,7 @@ The generated script should:
 - inspect the solid visually
 - adjust parameters and rerun
 - verify the model remains stable when dimensions change
+- validate final artifacts against the intended dimensions in the target slicer or printer tool when available
 
 ### 4. Print and Iterate
 
@@ -105,12 +106,16 @@ The generated script should:
 ## Best Practices
 
 - parameterize every dimension that may change
+- treat dimension edits as dependency edits: recompute derived slopes, landings, connector positions, traction features, bed fit, and clearances
 - prefer relative references over brittle absolute placement
 - choose BREP tooling for precise mechanical parts
 - export STEP for interoperability
 - document units and coordinate conventions
 - use assertions or lightweight tests for obvious geometry assumptions
 - store scripts in version control
+- generate printer-ready 3MF files from current parametric geometry, not stale STL intermediates
+- keep assembly STEP export optional when the immediate deliverable is plate-ready STL or 3MF output
+- for functional ramps and contact parts, report ratios such as slope after major dimension changes so printability and usability risks are visible
 
 ## Expectations for an AI Agent
 
@@ -133,4 +138,3 @@ An implementation-focused agent should:
 ## Conclusion
 
 Combining LLM planning with Python CAD libraries gives you a practical path from natural language to editable, printable parametric models. The real leverage comes from keeping the workflow structured: explicit briefs, repeatable prompt patterns, executable scripts, and fast iteration.
-
