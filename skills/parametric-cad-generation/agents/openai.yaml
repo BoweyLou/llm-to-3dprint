@@ -1,0 +1,5 @@
+interface:
+  display_name: "Parametric CAD"
+  short_description: "Parametric CAD from text specs"
+  default_prompt: "Use $parametric-cad-generation to design a printable parametric object in Python from my requirements."
+
