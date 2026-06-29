@@ -6,8 +6,12 @@ import os
 import subprocess
 import sys
 from datetime import datetime, timezone
-from dataclasses import dataclass
 from pathlib import Path
+
+sys.dont_write_bytecode = True
+
+import goal_check
+from classify_review_risk import classify_paths as classify_review_paths
 
 # Script flow:
 # 1. Inspect the target repo, changed files, kit state, backlog, and docs context.
@@ -21,7 +25,7 @@ from pathlib import Path
 # - extract_section/first_heading/truncate summarize local documentation.
 # - latest_adr/kit_context/target_version_context/backlog_context gather governance context.
 # - review_risk/classify_review_risk/should_consider_version_bump choose review scope.
-# - load_persona_manifest/specialist_matches/recommend_personas choose personas.
+# - load_persona_manifest/recommend_personas choose personas.
 # - ensure_runs_gitignore/build_receipt_template/allocate_run_dir create run artifacts.
 # - format_check_lines/format_persona_lines/build_brief/parse_docs_impact/main produce CLI output.
 
@@ -42,109 +46,31 @@ DEFAULT_REVIEW_PERSONAS = [
     "reuse-architecture",
 ]
 
-
-@dataclass(frozen=True)
-class RiskRule:
-    id: str
-    tier: str
-    personas: tuple[str, ...]
-    patterns: tuple[str, ...]
-    reason: str
-
-
-TIER_ORDER = {"low": 0, "medium": 1, "high": 2, "critical": 3}
-
-RISK_RULES = (
-    RiskRule(
-        id="auth-or-secrets",
-        tier="high",
-        personas=("security-privacy", "test-behavior-risk"),
-        patterns=("auth", "login", "session", "permission", "secret", "token", "credential", ".env"),
-        reason="auth, permission, token, credential, or secret-handling path",
-    ),
-    RiskRule(
-        id="data-deletion-or-destructive",
-        tier="critical",
-        personas=("security-privacy", "api-data-contracts", "test-behavior-risk"),
-        patterns=("delete", "destroy", "purge", "truncate", "wipe", "drop", "reset"),
-        reason="destructive data operation path or name",
-    ),
-    RiskRule(
-        id="migration-or-persistence",
-        tier="high",
-        personas=("api-data-contracts", "test-behavior-risk"),
-        patterns=("migration", "migrations/", "database", "db/", "schema", "schemas/", ".sql", "model"),
-        reason="migration, schema, database, or persisted data path",
-    ),
-    RiskRule(
-        id="public-api-or-contract",
-        tier="high",
-        personas=("api-data-contracts", "doc-code-delta", "test-behavior-risk"),
-        patterns=("api/", "openapi", "graphql", "webhook", "contract", "public", "sdk", "client"),
-        reason="public API, generated client, webhook, or contract path",
-    ),
-    RiskRule(
-        id="ci-build-release",
-        tier="medium",
-        personas=("dependencies-build", "runtime-observability"),
-        patterns=(
-            ".github/workflows",
-            "ci/",
-            "build",
-            "release",
-            "dockerfile",
-            "containerfile",
-            "makefile",
-            "package.json",
-            "pyproject.toml",
-            "requirements",
-        ),
-        reason="CI, build, packaging, or release path",
-    ),
-    RiskRule(
-        id="runtime-or-ops",
-        tier="medium",
-        personas=("runtime-observability",),
-        patterns=("deploy", "infra", "terraform", "helm", "service", "scheduler", "cron", "runbook", "ops/"),
-        reason="runtime, deployment, scheduling, or operations path",
-    ),
-    RiskRule(
-        id="docs-contract",
-        tier="medium",
-        personas=("doc-code-delta",),
-        patterns=("agents.md", "review.md", "doc-contract", "documentation-contract", "adr/", "docs/adr"),
-        reason="agent instruction, docs contract, or ADR path",
-    ),
-    RiskRule(
-        id="frontend-user-flow",
-        tier="medium",
-        personas=("frontend-ux", "test-behavior-risk"),
-        patterns=("frontend", "components/", "pages/", "routes/", ".tsx", ".jsx", ".vue", ".svelte", ".css"),
-        reason="frontend or user-flow path",
-    ),
-)
-
-SPECIALIST_RULES = [
-    (
-        "security-privacy",
-        ["auth", "secret", "token", "credential", "permission", "privacy", ".env"],
-    ),
-    (
-        "api-data-contracts",
-        ["api/", "openapi", "schema", "schemas/", "migration", "migrations/", "database", "db/", "sql"],
-    ),
-    (
-        "dependencies-build",
-        ["package.json", "package-lock.json", "pnpm-lock", "yarn.lock", "requirements", "pyproject.toml", "setup.py", "dockerfile", "makefile", ".github/workflows", "build", "ci/"],
-    ),
-    (
-        "runtime-observability",
-        ["deploy", "infra", "terraform", "helm", "service", "scheduler", "cron", "logging", "metrics", "observability", "runbook"],
-    ),
-    (
-        "frontend-ux",
-        ["frontend", "components/", "pages/", "routes/", ".tsx", ".jsx", ".vue", ".svelte", ".css"],
-    ),
+FRESHNESS_POLICY_MODES = [
+    {
+        "id": "report-only",
+        "label": "Report only",
+        "writes": "none",
+        "description": "Default task-start behavior. Report cleanliness, backlog, and kit drift without previewing or applying updates.",
+    },
+    {
+        "id": "dry-run",
+        "label": "Dry run",
+        "writes": "none",
+        "description": "Preview a target install refresh with an explicit dry-run command before any target files change.",
+    },
+    {
+        "id": "auto-update-clean",
+        "label": "Auto update clean",
+        "writes": "target",
+        "description": "Only eligible after explicit approval, a clean checkout, and a stale target install; agent-start never applies it automatically.",
+    },
+    {
+        "id": "maintenance",
+        "label": "Maintenance",
+        "writes": "global",
+        "description": "Reserved for explicit maintenance work that refreshes the global launcher or maintainer checkout.",
+    },
 ]
 
 
@@ -218,72 +144,17 @@ def parse_status_paths(status_output):
     return sorted(set(paths))
 
 
-def match_risk_rules(path):
-    lowered = path.lower().replace("\\", "/")
-    return [rule for rule in RISK_RULES if any(pattern in lowered for pattern in rule.patterns)]
-
-
-def review_risk_tier(triggers):
-    if not triggers:
-        return "low"
-    return max((trigger["tier"] for trigger in triggers), key=lambda tier: TIER_ORDER[tier])
-
-
-def review_trust_profile(tier, triggers):
-    rule_ids = {trigger["rule_id"] for trigger in triggers}
-    if "data-deletion-or-destructive" in rule_ids:
-        return "untrusted-pr"
-    if "auth-or-secrets" in rule_ids:
-        return "read-only-review"
-    if tier in {"high", "critical"}:
-        return "read-only-review"
-    return "read-only-review"
-
-
-def review_risk_guidance(tier, triggers):
-    guidance = [
-        "Reviewers are read-only by default: no file writes, git mutations, PR mutations, account mutations, or non-allowlisted network calls.",
-    ]
-    if tier in {"high", "critical"}:
-        guidance.append("Use specialist reviewers and require concrete file, command, docs, or runtime evidence before accepting findings.")
-    if any(trigger["rule_id"] == "auth-or-secrets" for trigger in triggers):
-        guidance.append("Do not expose secrets, tokens, cookies, private URLs, request bodies, or personal data in prompts or receipts.")
-    if any(trigger["rule_id"] == "data-deletion-or-destructive" for trigger in triggers):
-        guidance.append("Require human approval and rollback or recovery evidence before any write-capable follow-up.")
-    if not triggers:
-        guidance.append("No high-risk path trigger matched; keep the default small reviewer set unless the user request widens scope.")
-    return guidance
-
-
 def classify_review_risk(changed_files):
-    triggers = []
-    for path in changed_files:
-        for rule in match_risk_rules(path):
-            triggers.append(
-                {
-                    "path": path,
-                    "rule_id": rule.id,
-                    "tier": rule.tier,
-                    "reason": rule.reason,
-                    "personas": list(rule.personas),
-                }
-            )
-    tier = review_risk_tier(triggers)
-    return {
-        "schema_version": 1,
-        "risk_tier": tier,
-        "trust_profile": review_trust_profile(tier, triggers),
-        "triggers": triggers,
-        "guidance": review_risk_guidance(tier, triggers),
-        "policy_docs": [
-            "docs/ops/agent-tool-network-allowlist.md",
-            ".agent-workflows/agent-permission-policy.json",
-            ".codex/prompts/policies/review-risk-classifier.md",
-            ".codex/prompts/policies/read-only-reviewer-sandbox.md",
-            ".codex/prompts/policies/local-private-review.md",
-            ".codex/prompts/policies/browser-research-agent.md",
-        ],
-    }
+    result = classify_review_paths(changed_files)
+    result["policy_docs"] = [
+        "docs/ops/agent-tool-network-allowlist.md",
+        ".agent-workflows/agent-permission-policy.json",
+        ".codex/prompts/policies/review-risk-classifier.md",
+        ".codex/prompts/policies/read-only-reviewer-sandbox.md",
+        ".codex/prompts/policies/local-private-review.md",
+        ".codex/prompts/policies/browser-research-agent.md",
+    ]
+    return result
 
 
 def read_json(path):
@@ -411,7 +282,7 @@ def kit_context(root):
             "managed_file_count": 0,
             "target_owned_file_count": 0,
             "recent_update_reports": update_reports,
-            "update_command": "make kit-refresh KIT=/path/to/repo-contract-kit",
+            "update_command": "kit update --dry-run && kit update",
         }
 
     files = manifest.get("files", []) if isinstance(manifest, dict) else []
@@ -429,7 +300,7 @@ def kit_context(root):
         "managed_file_count": sum(1 for item in files if isinstance(item, dict) and item.get("managed")),
         "target_owned_file_count": sum(1 for item in files if isinstance(item, dict) and item.get("owner") == "target"),
         "recent_update_reports": update_reports,
-        "update_command": "make kit-refresh KIT=/path/to/repo-contract-kit",
+        "update_command": "kit update --dry-run && kit update",
     }
 
 
@@ -444,6 +315,44 @@ def target_version_context(root):
 
 
 def backlog_context(root):
+    prompt_path = ".codex/prompts/task-packet.md"
+    schema_path = "schemas/task-packet.schema.json"
+    try:
+        from repo_contract_kit import build_backlog_report
+
+        report = build_backlog_report(root, include_items=False)
+    except Exception:
+        report = None
+
+    if report and report.get("selected_source"):
+        counts = report.get("counts") or {}
+        open_items = []
+        for item in report.get("open_items") or []:
+            item_id = item.get("id") or "unknown"
+            title = item.get("title") or item.get("item") or ""
+            priority = item.get("priority") or "P2"
+            open_items.append(f"{item_id} [{priority}] {title}".strip())
+        return {
+            "mirror_present": True,
+            "mirror_path": report.get("selected_source"),
+            "selected_source": report.get("selected_source"),
+            "source_contract": report.get("source_contract"),
+            "mirror_sources": report.get("mirror_sources") or [],
+            "open_items": open_items[:10],
+            "open_item_count": counts.get("open", 0) + counts.get("partial", 0) + counts.get("other", 0),
+            "done_item_count": counts.get("done", 0),
+            "total_item_count": counts.get("total", 0),
+            "next_open_item": report.get("next_open_item"),
+            "warnings": report.get("warnings") or [],
+            "check": report.get("check") or {},
+            "task_packet_prompt": prompt_path if (root / prompt_path).exists() else None,
+            "task_packet_schema": schema_path if (root / schema_path).exists() else None,
+            "guidance": (
+                f"Backlog prioritisation belongs in the selected repository planning source `{report.get('selected_source')}` "
+                "or an external planning tool. Convert one selected backlog item into a task packet before implementation."
+            ),
+        }
+
     path = root / "docs" / "backlog.md"
     text = read_text(path)
     open_items = []
@@ -457,14 +366,19 @@ def backlog_context(root):
             elif lowered.startswith("- [x] "):
                 done_items.append(stripped[6:].strip())
 
-    prompt_path = ".codex/prompts/task-packet.md"
-    schema_path = "schemas/task-packet.schema.json"
     return {
         "mirror_present": text is not None,
         "mirror_path": "docs/backlog.md" if text is not None else None,
+        "selected_source": "docs/backlog.md" if text is not None else None,
+        "source_contract": None,
+        "mirror_sources": [],
         "open_items": open_items[:10],
         "open_item_count": len(open_items),
         "done_item_count": len(done_items),
+        "total_item_count": len(open_items) + len(done_items),
+        "next_open_item": None,
+        "warnings": [],
+        "check": {"passed": text is not None, "errors": [] if text is not None else ["no-backlog-source"]},
         "task_packet_prompt": prompt_path if (root / prompt_path).exists() else None,
         "task_packet_schema": schema_path if (root / schema_path).exists() else None,
         "guidance": (
@@ -473,6 +387,150 @@ def backlog_context(root):
             if text is not None
             else "No docs/backlog.md mirror found. Use the current user request, issue, or accepted finding as the task source."
         ),
+    }
+
+
+def safe_update_modes(root, repo_cleanliness, kit_drift):
+    repo_arg = str(root)
+    dirty = bool(repo_cleanliness.get("dirty"))
+    classification = kit_drift.get("classification") or "unknown"
+    next_commands = kit_drift.get("next_commands") or []
+    dry_run_commands = [item for item in next_commands if item.get("writes") == "none"]
+    target_write_commands = [item for item in next_commands if item.get("writes") == "target"]
+    global_write_commands = [item for item in next_commands if item.get("writes") == "global"]
+
+    dry_run_command = (
+        dry_run_commands[0]["command"]
+        if dry_run_commands
+        else f"kit update --dry-run --repo {repo_arg}"
+    )
+    target_apply_command = target_write_commands[0]["command"] if target_write_commands else f"kit update --repo {repo_arg}"
+    global_update_command = global_write_commands[0]["command"] if global_write_commands else "kit update --global"
+    stale_target = classification == "stale"
+    newer_target = classification == "newer-target"
+
+    modes = []
+    for mode in FRESHNESS_POLICY_MODES:
+        item = dict(mode)
+        item["auto_apply"] = False
+        if mode["id"] == "report-only":
+            item.update(
+                {
+                    "enabled": True,
+                    "eligible": True,
+                    "command": f"kit status --repo {repo_arg}",
+                    "reason": "safe default for every task start",
+                }
+            )
+        elif mode["id"] == "dry-run":
+            item.update(
+                {
+                    "enabled": True,
+                    "eligible": classification in {"stale", "unknown", "not-installed"},
+                    "command": dry_run_command,
+                    "reason": "non-mutating preview when target freshness is stale or unknown",
+                }
+            )
+        elif mode["id"] == "auto-update-clean":
+            item.update(
+                {
+                    "enabled": False,
+                    "eligible": stale_target and not dirty,
+                    "command": target_apply_command,
+                    "reason": (
+                        "requires explicit approval and a clean checkout"
+                        if not dirty
+                        else "blocked because the checkout is dirty"
+                    ),
+                }
+            )
+        elif mode["id"] == "maintenance":
+            item.update(
+                {
+                    "enabled": False,
+                    "eligible": newer_target,
+                    "command": global_update_command,
+                    "reason": "global-tool refresh belongs to explicit maintenance, not normal task start",
+                }
+            )
+        modes.append(item)
+    return modes
+
+
+def fallback_kit_drift(root, error):
+    repo_arg = str(root)
+    return {
+        "classification": "unknown",
+        "reason_code": "startup_freshness_error",
+        "reason": f"task-start freshness could not inspect kit drift: {error}",
+        "severity": "warning",
+        "global_tool": {},
+        "target_install": {},
+        "comparisons": {
+            "version": "unknown",
+            "source_ref": "unknown",
+            "prompt_snapshot": "unknown",
+        },
+        "next_commands": [
+            {
+                "command": f"kit status --repo {repo_arg} --json",
+                "reason": "inspect raw target and global kit metadata",
+                "writes": "none",
+            }
+        ],
+        "target_repo_writes": {"performed": False, "reason": "task-start freshness is read-only", "paths": []},
+        "sidecar_writes": {"performed": False, "reason": "task-start freshness is read-only", "paths": []},
+    }
+
+
+def task_start_freshness(root, status_output, backlog):
+    changed_files = parse_status_paths(status_output)
+    repo_cleanliness = {
+        "dirty": bool(status_output.strip()),
+        "changed_file_count": len(changed_files),
+        "changed_files": changed_files[:25],
+        "omitted_changed_file_count": max(0, len(changed_files) - 25),
+    }
+    backlog_source = {
+        "selected_source": backlog.get("selected_source"),
+        "source_contract": backlog.get("source_contract"),
+        "open_item_count": backlog.get("open_item_count", 0),
+        "done_item_count": backlog.get("done_item_count", 0),
+        "total_item_count": backlog.get("total_item_count", 0),
+        "next_open_item": backlog.get("next_open_item"),
+        "warnings": backlog.get("warnings") or [],
+    }
+
+    try:
+        import kit_status
+        import repo_contract_kit
+
+        install = repo_contract_kit.install_state(root)
+        local_kit = kit_status.local_kit_state(repo_contract_kit.ROOT)
+        kit_drift = repo_contract_kit.kit_drift_diagnostics(root, install, local_kit)
+    except Exception as exc:  # pragma: no cover - defensive fallback for broken installs
+        kit_drift = fallback_kit_drift(root, exc)
+
+    modes = safe_update_modes(root, repo_cleanliness, kit_drift)
+    recommended_mode = "report-only"
+    if kit_drift.get("classification") in {"stale", "unknown", "not-installed"}:
+        recommended_mode = "dry-run"
+    elif kit_drift.get("classification") == "newer-target":
+        recommended_mode = "maintenance"
+
+    return {
+        "result": "warning" if kit_drift.get("severity") == "warning" else "ok",
+        "policy": {
+            "selected": "report-only",
+            "recommended": recommended_mode,
+            "auto_apply_performed": False,
+            "target_repo_writes": {"performed": False, "reason": "agent-start freshness is read-only", "paths": []},
+            "sidecar_writes": {"performed": False, "reason": "agent-start freshness is read-only", "paths": []},
+        },
+        "repo_cleanliness": repo_cleanliness,
+        "backlog_source": backlog_source,
+        "kit_drift": kit_drift,
+        "safe_update_modes": modes,
     }
 
 
@@ -523,15 +581,6 @@ def load_persona_manifest(root):
     return manifest_path, {persona.get("id"): persona for persona in personas if isinstance(persona, dict)}
 
 
-def specialist_matches(changed_files):
-    haystack = "\n".join(path.lower() for path in changed_files)
-    matches = []
-    for persona, patterns in SPECIALIST_RULES:
-        if any(pattern in haystack for pattern in patterns):
-            matches.append(persona)
-    return matches
-
-
 def recommend_personas(root, mode, changed_files, review_risk, warnings):
     manifest_path, personas_by_id = load_persona_manifest(root)
     if mode == "learning-comments":
@@ -547,14 +596,7 @@ def recommend_personas(root, mode, changed_files, review_risk, warnings):
         )
         return [], [".agent-workflows/repo-review.md", ".codex/prompts/multi-agent-repo-review.md"]
 
-    selected = list(DEFAULT_REVIEW_PERSONAS)
-    for persona in specialist_matches(changed_files):
-        if persona not in selected:
-            selected.append(persona)
-    for trigger in review_risk.get("triggers", []):
-        for persona in trigger.get("personas", []):
-            if persona not in selected:
-                selected.append(persona)
+    selected = list(review_risk.get("recommended_personas") or DEFAULT_REVIEW_PERSONAS)
 
     recommended = []
     for persona_id in selected:
@@ -668,6 +710,18 @@ def format_persona_lines(personas):
     return "\n".join(f"- `{persona['id']}`: {persona.get('prompt')}" for persona in personas)
 
 
+def format_freshness_mode_lines(modes):
+    lines = []
+    for mode in modes:
+        enabled = "enabled" if mode.get("enabled") else "approval-required"
+        eligible = "eligible" if mode.get("eligible") else "not eligible"
+        lines.append(
+            f"- `{mode['id']}`: {enabled}, {eligible}, writes `{mode['writes']}`; "
+            f"command: `{mode['command']}`"
+        )
+    return "\n".join(lines)
+
+
 def build_brief(packet):
     latest = packet["latest_adr"]
     adr_line = "No latest ADR was found."
@@ -685,16 +739,18 @@ def build_brief(packet):
             "`make version-bump BUMP=patch|minor|major` after the change scope is accepted."
         )
     backlog = packet["backlog"]
+    freshness = packet["task_start_freshness"]
+    drift = freshness["kit_drift"]
     if backlog["mirror_present"]:
         backlog_guidance = (
-            f"- Backlog mirror: `{backlog['mirror_path']}` with {backlog['open_item_count']} open items.\n"
+            f"- Backlog source: `{backlog['mirror_path']}` with {backlog['open_item_count']} open items and {backlog['done_item_count']} done items.\n"
             f"- Task-packet prompt: `{backlog['task_packet_prompt'] or 'missing'}`\n"
             f"- Task-packet schema: `{backlog['task_packet_schema'] or 'missing'}`\n"
             "- For backlog-driven work, select one item and convert it into a task packet before editing."
         )
     else:
         backlog_guidance = (
-            "- No backlog mirror was found under docs/backlog.md.\n"
+            "- No supported backlog source was found.\n"
             "- Use an issue, accepted finding, user request, or external planning item as the task source."
         )
     risk = packet["review_risk"]
@@ -707,6 +763,12 @@ def build_brief(packet):
         trigger_lines = "- No deterministic risk triggers matched the changed files."
     risk_guidance = "\n".join(f"- {item}" for item in risk["guidance"])
     policy_docs = "\n".join(f"- `{path}`" for path in risk["policy_docs"] if path)
+    area_goal = packet["goal_check"]
+    area_summary = area_goal["summary"]
+    unknown_paths = area_summary.get("unknown_paths") or []
+    conflict_paths = area_summary.get("conflict_paths") or []
+    unknown_line = ", ".join(f"`{path}`" for path in unknown_paths[:8]) if unknown_paths else "None."
+    conflict_line = ", ".join(f"`{path}`" for path in conflict_paths[:8]) if conflict_paths else "None."
 
     return f"""# Agent Start Brief
 
@@ -726,20 +788,43 @@ Treat latest ADRs as constraints/defaults; use the requested mode/backlog item a
 - Changed files: {len(packet['git']['changed_files'])}
 - Dirty working tree: {str(packet['git']['dirty']).lower()}
 - Kit status: {kit['status']} (version `{kit['source_version'] or 'unknown'}`)
-- Prompt snapshot: `{(kit['prompt_snapshot'] or {}).get('name', 'agent-workflow-kit')}` ref `{(kit['prompt_snapshot'] or {}).get('source_ref', 'unknown')}`
+- Task-start freshness: `{freshness['result']}`; recommended policy `{freshness['policy']['recommended']}`
+- Workflow prompt snapshot ref: `{(kit['prompt_snapshot'] or {}).get('source_ref', 'unknown')}`
 - Target repo version: `{versioning['target_version']['current'] or 'missing'}`
 - Review risk tier: `{risk['risk_tier']}` using trust profile `{risk['trust_profile']}`
+- Goal check: `{area_goal['result']}` from `{area_goal['config'].get('relative_path')}`
 
 ## Kit And Versioning
 
 - Update status command: `{kit['update_command']}`
 - Manifest present: {str(kit['manifest_present']).lower()}
 - Managed files: {kit['managed_file_count']}
+- Kit drift: `{drift.get('classification', 'unknown')}` ({drift.get('reason', 'unknown')})
 {version_guidance}
+
+## Task Start Freshness
+
+- Repo clean: {str(not freshness['repo_cleanliness']['dirty']).lower()} ({freshness['repo_cleanliness']['changed_file_count']} changed files)
+- Backlog source: `{freshness['backlog_source']['selected_source'] or 'none'}`
+- Global kit version: `{(drift.get('global_tool') or {}).get('version') or 'unknown'}`
+- Target install version: `{(drift.get('target_install') or {}).get('version') or 'unknown'}`
+- Selected policy: `{freshness['policy']['selected']}`; recommended next mode: `{freshness['policy']['recommended']}`
+
+Safe update modes:
+
+{format_freshness_mode_lines(freshness['safe_update_modes'])}
 
 ## Backlog And Task Packets
 
 {backlog_guidance}
+
+## Goal And Area Check
+
+- Repo goal: {area_goal['repo_goal'] or '(not declared)'}
+- Summary: aligned {area_summary.get('aligned', 0)}, extends {area_summary.get('extends', 0)}, conflict {area_summary.get('conflict', 0)}, unknown {area_summary.get('unknown', 0)}
+- Unknown paths: {unknown_line}
+- Conflict paths: {conflict_line}
+- Command: `make goal-check`
 
 ## Review Risk And Tool Boundary
 
@@ -833,8 +918,11 @@ def main():
 
     docs_impact = parse_docs_impact(localize, warnings)
     review_risk = classify_review_risk(changed_files)
+    goal_report = goal_check.build_goal_check_report(root, changed_files)
+    goal_summary = goal_check.compact_goal_summary(goal_report)
     kit = kit_context(root)
     backlog = backlog_context(root)
+    freshness = task_start_freshness(root, status_output, backlog)
     versioning = {
         "target_version": target_version_context(root),
         "consider_bump": should_consider_version_bump(docs_impact, changed_files),
@@ -845,13 +933,23 @@ def main():
         ],
     }
     if kit["status"] == "legacy-no-manifest":
-        warnings.append("Kit install receipt exists but manifest is missing. Run `make kit-update KIT=/path/to/repo-contract-kit` once to adopt safely.")
+        warnings.append("Kit install receipt exists but manifest is missing. Run `kit update --dry-run` then `kit update` once to adopt safely.")
+    if freshness["kit_drift"].get("classification") in {"stale", "newer-target", "unknown"}:
+        warnings.append(
+            "Task-start freshness found kit drift; use the recommended non-mutating or maintenance command before write-capable work."
+        )
     if not versioning["target_version"]["current"]:
         warnings.append("Target repo VERSION is missing. Install or refresh the versioning profile if this repo should track SemVer locally.")
     if backlog["mirror_present"] and not backlog["task_packet_prompt"]:
         warnings.append("Backlog mirror exists but .codex/prompts/task-packet.md is missing. Install the review-prompts profile to enable backlog-to-task handoff.")
     if backlog["task_packet_prompt"] and not backlog["task_packet_schema"]:
         warnings.append("Task-packet prompt exists but schemas/task-packet.schema.json is missing. Refresh the installed kit files.")
+    if not goal_summary["config"].get("exists"):
+        warnings.append("Area-contract config is missing; goal-check will report changed paths as unknown.")
+    if goal_summary["summary"].get("unknown"):
+        warnings.append("Goal-check found changed paths with no matching area contract.")
+    if goal_summary["summary"].get("conflict"):
+        warnings.append("Goal-check found changed paths marked as conflict with the repo goal.")
     recommended_personas, prompt_paths = recommend_personas(root, args.mode, changed_files, review_risk, warnings)
     for prompt_path in prompt_paths:
         if not (root / prompt_path).exists():
@@ -887,8 +985,10 @@ def main():
         },
         "docs_impact": docs_impact,
         "review_risk": review_risk,
+        "goal_check": goal_summary,
         "kit": kit,
         "backlog": backlog,
+        "task_start_freshness": freshness,
         "versioning": versioning,
         "checks": checks,
         "latest_adr": latest,

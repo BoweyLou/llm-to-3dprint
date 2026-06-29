@@ -9,7 +9,9 @@ hosted CI, or a specific coding agent is available.
 - Read `AGENTS.md`, `doc-contract.json`, and `docs/documentation-contract.md`
   before making findings.
 - Run local commands from the checkout when available.
-- Treat `scripts/check_doc_impact.py` as the local docs-contract gate.
+- Treat `scripts/check_doc_impact.py` as the local docs-impact coverage gate
+  and `scripts/check_docs_freshness.py` / `make docs-freshness` as the
+  executable documentation freshness gate when installed.
 - Use `scripts/localize_doc_impact.py --json` to map changed source paths to
   likely docs before asking an agent to reason broadly.
 - Use `scripts/lint_agent_docs.py --strict-paths` before trusting local agent

@@ -13,6 +13,14 @@ line or rule-bullet budgets.
 Keep the default budgets warning-only until the repository has calibrated them.
 Repos that want stricter governance can set an entry's `severity` to `error`.
 
+## Diet Audit
+
+Run `make agent-instruction-diet` when `AGENTS.md`, `REVIEW.md`, runtime
+adapters, or prompt files are near budget or feel too procedural. The audit is
+report-only: it proposes offload destinations such as scoped docs, JSON
+contracts, generated reports, scripts, task packets, or budget config. It does
+not rewrite or delete instruction files.
+
 ## Promotion Rule
 
 Add a durable rule to an agent-facing instruction file only when it is one of

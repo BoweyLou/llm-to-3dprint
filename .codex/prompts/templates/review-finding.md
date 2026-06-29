@@ -6,6 +6,7 @@ Use this structure for each finding.
 ## [P0-P3] Short Title
 
 Area: docs | code | tests | build | security | runtime | UX | architecture
+Labels: optional comma-separated labels, such as `comment-drift`, `docstring-drift`, `stale-comment`, `misleading-comment`, `stale-docstring`, `generated-or-vendored-comment`, `intentionally-stable-comment`, or `low-confidence-drift`
 Confidence: high | medium | low
 Disposition: open | accepted | rejected | fixed | deferred | duplicate
 Evidence:
@@ -26,6 +27,9 @@ Name the test, command, runtime check, or manual inspection that would prove the
 
 False-positive check:
 State the most plausible reason this might be harmless, or write `none found`.
+For comment/docstring drift, name whether generated/vendor ownership,
+intentionally historical context, framework convention, simplified examples, or
+low-confidence/speculative evidence makes the finding harmless.
 ```
 
 Priority guide:
@@ -34,6 +38,16 @@ Priority guide:
 - `P1`: High-likelihood bug, serious maintenance trap, broken documented behavior, or missing critical test.
 - `P2`: Moderate risk, duplicated behavior likely to drift, weak abstraction, or stale documentation.
 - `P3`: Cleanup, clarity, style, or low-risk follow-up.
+
+Comment/docstring drift priority guide:
+
+- Default stale or misleading comments/docstrings to advisory P3 or P2.
+- Require evidence from both the maintained comment/docstring and the current
+  source of truth before opening a finding.
+- Use P1/P0 only when concrete public API, runtime, operational,
+  security/privacy, or likely-wrong-future-edit evidence raises the impact.
+- Reject, defer, duplicate, or mark low-confidence cases instead of treating
+  every stale-looking comment as a defect.
 
 Default finding budget:
 

@@ -37,6 +37,5 @@ Do not:
 Output:
 - Findings in `templates/review-finding.md` format.
 - Contract map: producer, consumer, schema/source of truth, test evidence.
-- Compatibility risks and required migration checks.
+- Compatibility risks and migration checks.
 ```
-

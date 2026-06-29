@@ -4,7 +4,7 @@
   "title": "Targeted Research Brief",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "research", "sources", "boundaries", "outputs", "approval"],
+  "required": ["schema_version", "research", "sources", "novelty_ledger", "boundaries", "outputs", "approval"],
   "properties": {
     "schema_version": {
       "type": "integer",
@@ -137,6 +137,9 @@
         }
       }
     },
+    "novelty_ledger": {
+      "$ref": "#/$defs/novelty_ledger"
+    },
     "boundaries": {
       "type": "object",
       "additionalProperties": false,
@@ -198,6 +201,115 @@
         "proposed_writes_only": {
           "type": "boolean",
           "const": true
+        }
+      }
+    }
+  },
+  "$defs": {
+    "novelty_ledger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prior_question_fingerprints",
+        "recent_topics",
+        "novelty_threshold",
+        "carry_forward_leads"
+      ],
+      "properties": {
+        "prior_question_fingerprints": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "recent_topics": {
+          "type": "array",
+          "maxItems": 25,
+          "items": {
+            "$ref": "#/$defs/recent_topic"
+          }
+        },
+        "novelty_threshold": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 70
+        },
+        "carry_forward_leads": {
+          "type": "array",
+          "maxItems": 25,
+          "items": {
+            "$ref": "#/$defs/carry_forward_lead"
+          }
+        }
+      }
+    },
+    "recent_topic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["topic", "summary", "last_seen_at", "fingerprints"],
+      "properties": {
+        "topic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "last_seen_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "fingerprints": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "related_backlog_ids": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "carry_forward_lead": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "state", "reason", "source_evidence", "next_run_action"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "type": "string",
+          "enum": ["rejected", "deferred"]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_evidence": {
+          "type": "array",
+          "maxItems": 10,
+          "items": {
+            "type": "string"
+          }
+        },
+        "next_run_action": {
+          "type": "string",
+          "enum": ["do-not-repeat", "recheck-with-new-evidence", "reframe", "needs-human-decision"]
+        },
+        "fingerprint": {
+          "type": ["string", "null"]
         }
       }
     }

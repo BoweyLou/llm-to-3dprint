@@ -12,7 +12,7 @@ Prioritize:
 - Data migrations and persistence
 - Recent changes with no test changes
 - Test suites that mock away the actual risk
-- Docs examples that should be executable or covered
+- Docs examples expected to be executable or covered
 
 Investigation method:
 1. Map test commands and test layout.
@@ -40,4 +40,3 @@ Output:
 - Behavior-risk map: critical flows, current test evidence, missing checks.
 - Suggested tests ordered by regression value.
 ```
-

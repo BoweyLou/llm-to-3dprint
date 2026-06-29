@@ -9,6 +9,19 @@ from pathlib import Path
 MAKEFILE_BRIDGE_PATH = ".doc-contract-kit/make/repo-contract.mk"
 MAKEFILE_INCLUDE_LINE = f"include {MAKEFILE_BRIDGE_PATH}"
 KIT_MAKE_TARGETS = ("agent-start", "kit-status", "kit-update", "kit-refresh")
+PROMPT_SNAPSHOT_PATHS = [
+    "templates/profiles/review-prompts/files/.codex/prompts",
+    "templates/profiles/test-first/files/.codex/prompts",
+    "templates/profiles/local-agentic/files/.agent-workflows",
+    "templates/common/persona-manifest.schema.json",
+    "templates/common/review-synthesis.schema.json",
+    "templates/common/review-risk.schema.json",
+    "templates/common/session-receipt.schema.json",
+    "templates/common/task-packet.schema.json",
+    "templates/common/research-brief.schema.json",
+    "templates/common/research-source-report.schema.json",
+    "templates/common/research-synthesis.schema.json",
+]
 
 # Script flow:
 # 1. Read local install manifests and source-kit metadata.
@@ -43,6 +56,41 @@ def sha256_path(path: Path):
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
+    return digest.hexdigest()
+
+
+def snapshot_files(root: Path, paths: list[str]):
+    files = []
+    for rel_path in sorted(paths):
+        path = root / rel_path
+        if not path.exists():
+            return None
+        if path.is_dir():
+            files.extend(sorted(item for item in path.rglob("*") if item.is_file()))
+            continue
+        if path.is_file():
+            files.append(path)
+    return files
+
+
+def snapshot_paths_sha256(root: Path, paths: list[str]):
+    digest = hashlib.sha256()
+    try:
+        files = snapshot_files(root, paths)
+    except OSError:
+        return None
+    if not files:
+        return None
+    for path in files:
+        try:
+            rel_path = path.relative_to(root).as_posix()
+            data = path.read_bytes()
+        except OSError:
+            return None
+        digest.update(rel_path.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(data)
+        digest.update(b"\0")
     return digest.hexdigest()
 
 
@@ -92,14 +140,26 @@ def current_git_commit_from_files(root: Path):
 
 
 def local_prompt_snapshot(kit_root: Path):
-    metadata = read_json(kit_root / "agent-workflow-kit.snapshot.json") or {}
+    metadata = read_json(kit_root / "workflow-source.snapshot.json")
+    legacy = False
+    if metadata is None:
+        metadata = read_json(kit_root / "agent-workflow-kit.snapshot.json")
+        legacy = metadata is not None
+    metadata = metadata or {}
     if isinstance(metadata, dict) and "_error" in metadata:
         return metadata
+    paths = metadata.get("snapshot_paths") or PROMPT_SNAPSHOT_PATHS
+    snapshot_sha256 = metadata.get("snapshot_sha256")
+    if not snapshot_sha256 or snapshot_sha256 == "computed":
+        snapshot_sha256 = snapshot_paths_sha256(kit_root, paths)
+    source_ref = metadata.get("source_ref")
+    if not source_ref or source_ref in {"self", "computed"}:
+        source_ref = current_git_commit(kit_root)
     return {
-        "name": metadata.get("name") or "agent-workflow-kit",
-        "version": metadata.get("version") or "unversioned",
-        "source_ref": metadata.get("source_ref"),
-        "snapshot_sha256": metadata.get("snapshot_sha256"),
+        "name": metadata.get("name") or ("agent-workflow-kit" if legacy else "workflow-source"),
+        "version": metadata.get("version") or read_text(kit_root / "VERSION") or "unversioned",
+        "source_ref": source_ref,
+        "snapshot_sha256": snapshot_sha256,
     }
 
 
@@ -121,8 +181,12 @@ def snapshot_from_install(receipt, manifest):
     if isinstance(manifest, dict) and isinstance(manifest.get("prompt_snapshot"), dict):
         return manifest["prompt_snapshot"]
     components = receipt.get("source_components", {}) if isinstance(receipt, dict) else {}
-    snapshot = components.get("agent-workflow-kit") if isinstance(components, dict) else None
-    return snapshot if isinstance(snapshot, dict) else None
+    if isinstance(components, dict):
+        for key in ("workflow-source", "repo-contract-kit-workflows", "agent-workflow-kit"):
+            snapshot = components.get(key)
+            if isinstance(snapshot, dict):
+                return snapshot
+    return None
 
 
 def managed_file_status(root: Path, manifest):
@@ -215,10 +279,11 @@ def print_boundary_explain(root: Path, manifest):
     print("- Existing customized Makefiles are preserved during update; proposed bridges are written under .doc-contract-kit/updates/.")
     print("")
     print("Existing Repo Update Path")
-    print("1. make kit-status KIT=/path/to/repo-contract-kit")
-    print("2. make kit-update KIT=/path/to/repo-contract-kit")
-    print("3. make kit-status")
-    print("4. If kit targets are missing, add the Makefile include line above or merge the proposed Makefile bridge from the latest update report.")
+    print("1. kit status")
+    print("2. kit update --dry-run")
+    print("3. kit update")
+    print("4. make kit-status")
+    print("5. If kit targets are missing, add the Makefile include line above or merge the proposed Makefile bridge from the latest update report.")
     if isinstance(manifest, dict):
         print("")
         print(makefile_boundary_status(root, manifest))
@@ -226,7 +291,7 @@ def print_boundary_explain(root: Path, manifest):
 
 def print_update_comparison(receipt, manifest, kit_root: Path | None):
     if not kit_root:
-        print("update check: pass KIT=/path/to/repo-contract-kit to compare against a local checkout")
+        print("update check: pass KIT=/path/to/kit to compare against a local checkout")
         return
 
     local = local_kit_state(kit_root)
@@ -265,7 +330,7 @@ def print_update_comparison(receipt, manifest, kit_root: Path | None):
 
 def main():
     parser = argparse.ArgumentParser(description="Show installed repo-contract-kit status")
-    parser.add_argument("--kit", help="Optional local repo-contract-kit checkout to compare against")
+    parser.add_argument("--kit", help="Optional local kit checkout to compare against")
     parser.add_argument("--explain", action="store_true", help="Explain installed-kit vs target-repo ownership and update steps")
     args = parser.parse_args()
 
@@ -286,18 +351,19 @@ def main():
     print(f"source ref: {short_ref(receipt.get('source_ref') or receipt.get('source_commits', {}).get('repo-contract-kit'))}")
     print(f"preset: {receipt.get('preset') or 'none'}")
     print(f"profiles: {', '.join(receipt.get('profiles', [])) or 'none'}")
+    print(f"runtime adapters: {', '.join(receipt.get('runtime_adapters', [])) or 'none'}")
     print(f"target repo version: {target_version}")
 
     prompt_snapshot = snapshot_from_install(receipt, manifest)
     if prompt_snapshot:
         print(
-            "agent-workflow-kit snapshot: "
+            "workflow prompt snapshot: "
             f"{prompt_snapshot.get('version') or 'unknown'} "
             f"ref {short_ref(prompt_snapshot.get('source_ref'))} "
             f"hash {short_ref(prompt_snapshot.get('snapshot_sha256'))}"
         )
     else:
-        print("agent-workflow-kit snapshot: unknown")
+        print("workflow prompt snapshot: unknown")
 
     if not manifest:
         print("managed manifest: missing")

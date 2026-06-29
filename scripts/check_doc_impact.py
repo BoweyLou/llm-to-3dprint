@@ -283,6 +283,84 @@ def evaluate(changed_files, config, no_docs_declaration=False):
     )
 
 
+def category_records(result, config):
+    return [
+        {
+            "category": category,
+            "changed_files": sorted(paths),
+            "suggested_doc_paths": config["category_doc_paths"].get(category, config["doc_paths"]),
+            "covered": category in result.covered_categories,
+        }
+        for category, paths in sorted(result.categories.items())
+    ]
+
+
+def json_payload(result, config):
+    return {
+        "status": "fail" if result.failed else "pass",
+        "changed_files": result.changed_files,
+        "docs_changed": result.docs_changed,
+        "categories": category_records(result, config),
+        "missing_categories": sorted(result.missing_categories),
+        "no_docs_declaration": result.no_docs_declaration,
+        "result": "missing-docs" if result.failed else "covered-or-no-impact",
+    }
+
+
+def sarif_payload(result, config):
+    rules = {}
+    sarif_results = []
+    if result.failed:
+        for category in sorted(result.missing_categories):
+            rule_id = f"docs-contract-{category}"
+            suggested = config["category_doc_paths"].get(category, config["doc_paths"])
+            rules[rule_id] = {
+                "id": rule_id,
+                "name": f"Missing documentation coverage for {category}",
+                "shortDescription": {"text": f"Documentation impact for {category} is not covered."},
+                "help": {"text": "Update the expected docs or declare an explicit no-docs-needed reason."},
+            }
+            for path in sorted(result.categories.get(category, [])):
+                sarif_results.append(
+                    {
+                        "ruleId": rule_id,
+                        "level": "error",
+                        "message": {
+                            "text": (
+                                f"{path} is categorized as {category}, but no matching documentation "
+                                f"was changed. Suggested docs: {', '.join(suggested)}."
+                            )
+                        },
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": path}
+                                }
+                            }
+                        ],
+                        "properties": {
+                            "category": category,
+                            "suggested_doc_paths": suggested,
+                        },
+                    }
+                )
+    return {
+        "version": "2.1.0",
+        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+        "runs": [
+            {
+                "tool": {
+                    "driver": {
+                        "name": "repo-contract-kit docs contract",
+                        "rules": list(rules.values()),
+                    }
+                },
+                "results": sarif_results,
+            }
+        ],
+    }
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Check whether doc-impacting changes updated docs")
     parser.add_argument(
@@ -310,6 +388,12 @@ def parse_args():
         "--no-docs-needed",
         help="Explicit no-docs-needed reason for this change.",
     )
+    parser.add_argument(
+        "--format",
+        choices=["text", "json", "sarif"],
+        default="text",
+        help="Output format for local use or code-scanning adapters.",
+    )
     return parser.parse_args()
 
 
@@ -333,11 +417,24 @@ def main():
     else:
         changed_files = get_changed_files()
     if not changed_files:
+        if args.format == "json":
+            print(json.dumps(json_payload(evaluate([], config), config), indent=2, sort_keys=True))
+            return
+        if args.format == "sarif":
+            print(json.dumps(sarif_payload(evaluate([], config), config), indent=2, sort_keys=True))
+            return
         print("No changed files detected.")
         return
 
     no_docs_declaration = has_no_docs_declaration(args.no_docs_needed, config)
     result = evaluate(changed_files, config, no_docs_declaration)
+
+    if args.format == "json":
+        print(json.dumps(json_payload(result, config), indent=2, sort_keys=True))
+        sys.exit(1 if result.failed else 0)
+    if args.format == "sarif":
+        print(json.dumps(sarif_payload(result, config), indent=2, sort_keys=True))
+        sys.exit(1 if result.failed else 0)
 
     print("Changed files:")
     for path in result.changed_files:

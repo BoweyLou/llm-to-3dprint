@@ -27,7 +27,9 @@ jobs:
           python3 -m json.tool schemas/agent-permission-policy.schema.json >/dev/null
 
       - name: Run local documentation contract
-        run: make docs-check
+        run: |
+          python3 scripts/repo_contract_kit.py doc-impact --repo . --format sarif > docs-impact.sarif
+          make docs-check
 
       - name: Run local agent instruction lint
         run: python3 scripts/lint_agent_docs.py --strict-paths --format sarif > agent-docs-lint.sarif

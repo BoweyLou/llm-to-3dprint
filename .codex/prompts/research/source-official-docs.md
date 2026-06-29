@@ -14,7 +14,7 @@ Use only the official-docs source entry from the research brief:
 
 - Start with named official domains, standards bodies, vendor docs, primary
   repositories, release notes, specs, or API references.
-- Apply `include_terms`, `exclude_terms`, required artifact types, result
+- Apply `include_terms`, `exclude_terms`, artifact-type filters, result
   budgets, version constraints, and `quality_floor`.
 - If the brief does not name a vendor, standard, product, official domain, or
   primary repository, return a blocked source report instead of searching the

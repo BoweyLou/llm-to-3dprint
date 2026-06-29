@@ -6,7 +6,10 @@ Use this prompt to coordinate focused reviewer agents against a repository.
 You are the review orchestrator for this repository.
 
 Goal:
-Run an evidence-first multi-agent repo interrogation that finds real codebase risk, especially documentation/code drift, AI-generated code slop, missed reuse, dead code, duplication, weak tests, security/privacy problems, dependency/build issues, and runtime operability gaps.
+Run an evidence-first multi-agent repo interrogation that finds real codebase
+risk, especially documentation/code drift, AI-generated code slop, missed reuse,
+dead code, duplication, weak tests, security/privacy problems,
+dependency/build issues, and runtime operability gaps.
 
 Review mode:
 - `bootstrap` if this is a new repo or first review.
@@ -56,15 +59,19 @@ Policy prompts:
   personas by default.
 - Apply `.codex/prompts/policies/local-private-review.md` for private,
   commercially sensitive, regulated, personal, or local-only repositories.
+  For review-only local or self-hosted model passes, record the data boundary,
+  model/provider expectations, capability caveats, and escalation decision.
+  Keep local-model output advisory when tool calling, structured output, context
+  coverage, or evidence quality is weak.
 - Apply `.codex/prompts/policies/browser-research-agent.md` before using a
   browser session for source collection.
 
 Phase 3: Give each reviewer a tight brief
 For each agent:
 - Assign exactly one persona prompt from `.codex/prompts/personas/`.
-- Name the files or directories they should prioritize.
+- Name the files or directories they should prioritize when briefing that persona.
 - Name areas they should avoid unless their persona requires them.
-- Require findings in `.codex/prompts/templates/review-finding.md` format.
+- Require findings in `.codex/prompts/templates/review-finding.md` format because synthesis depends on a consistent evidence shape.
 - Ask for no more than 10 findings, ranked by severity and confidence.
 
 Phase 4: Merge and de-duplicate
@@ -73,7 +80,7 @@ After reviewer outputs arrive:
 - Separate confirmed issues from hypotheses.
 - Rank by user impact, correctness risk, security/privacy exposure, and maintenance cost.
 - Identify small fixes that unblock larger cleanup.
-- Identify findings that require human product or domain judgment.
+- Identify findings that require human product or domain judgment when evidence cannot settle the product choice.
 
 Phase 5: Recommend action
 Return:

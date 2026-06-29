@@ -150,6 +150,27 @@ def source_template(source, args):
     }
 
 
+def novelty_ledger_template():
+    return {
+        "carry_forward_leads": [],
+        "novelty_threshold": 70,
+        "prior_question_fingerprints": [],
+        "recent_topics": [],
+    }
+
+
+def candidate_score_template():
+    return {
+        "effort": 0,
+        "evidence_strength": 0,
+        "fit": 0,
+        "novelty": 0,
+        "rationale": "Not scored yet.",
+        "recommendation_state": "defer",
+        "risk": 0,
+    }
+
+
 def plan(args):
     root = repo_root()
     prompt = read_required_text(root, ".codex/prompts/research/research-brief.md")
@@ -185,6 +206,7 @@ def plan(args):
             ],
             "target": args.output,
         },
+        "novelty_ledger": novelty_ledger_template(),
         "research": {
             "created_at": now(),
             "id": research_id,
@@ -286,6 +308,17 @@ def synthesize(args):
         source_artifacts = sorted(str(path.relative_to(root)) for path in sources_dir.glob("*/source-report.template.json"))
     payload = {
         "schema_version": 1,
+        "candidate_ideas": [
+            {
+                "candidate_score": candidate_score_template(),
+                "id": "CANDIDATE-001",
+                "proposed_artifact": "",
+                "source_evidence": [],
+                "state": "draft",
+                "target": run_payload.get("target", "backlog"),
+                "title": "Fill in candidate idea after synthesis.",
+            }
+        ],
         "disposition": {
             "next_actions": [],
             "status": "not-run",

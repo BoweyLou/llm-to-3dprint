@@ -16,6 +16,9 @@ or CI review adapters.
   mutation, and CI secret access are denied.
 - Network calls are denied unless this file or the active trust profile names
   an explicit allowlist.
+- Ignored private context files, when present under `.agent-context/`, must be
+  reviewed and redacted before they are pasted into hosted models, browser
+  tools, GitHub comments, PRs, issues, external tickets, or chat tools.
 
 ## Trust Profiles
 

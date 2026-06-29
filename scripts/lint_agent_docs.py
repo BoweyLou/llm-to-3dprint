@@ -7,6 +7,7 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 # Script flow:
 # 1. Discover agent-facing instruction files from known paths and glob patterns.
@@ -22,6 +23,8 @@ from pathlib import Path
 # - check_rule_bloat_and_provenance/check_contradictions detect maintainability problems.
 # - referenced_paths/check_referenced_paths validate mentioned files.
 # - check_file/issue_dict/sarif_payload/print_issues/parse_args/main run and report linting.
+# - build_instruction_diet_report/print_instruction_diet_report propose no-write
+#   offloads for growing agent-facing instruction files.
 
 DEFAULT_BUDGET_CONFIG = ".agent-workflows/instruction-budgets.json"
 
@@ -143,10 +146,18 @@ ACCOUNT_MUTATION_PATTERNS = [
 RULE_WORD_RE = re.compile(r"\b(must|always|never|required|require|should)\b", re.IGNORECASE)
 RULE_BULLET_RE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+")
 PROVENANCE_WORD_RE = re.compile(r"\b(because|when|if|unless|so that|to prevent|risk|failure|regression|evidence)\b", re.IGNORECASE)
+LINE_NUMBER_RE = re.compile(r"\bline\s+(\d+)\b", re.IGNORECASE)
 MAKE_TARGET_RE = re.compile(r"^([A-Za-z0-9_.-]+)\s*:(?![=])")
 MAKE_INCLUDE_RE = re.compile(r"^\s*(?:-?include|sinclude)\s+(.+)$")
 COMMAND_BLOCK_RE = re.compile(r"```(?:bash|sh|shell|zsh|text)?\n(.*?)```", re.DOTALL)
 COMMAND_LINE_RE = re.compile(r"^\s*(?:[$]\s*)?(make|python3?|uv|npm|pnpm|yarn|git)\b(.+)$")
+ROUTE_MAP_FILES = {
+    "AGENTS.md",
+    "REVIEW.md",
+    "CLAUDE.md",
+    "GEMINI.md",
+    ".github/copilot-instructions.md",
+}
 CONTRADICTION_PAIRS = [
     (
         "git-commit",
@@ -547,6 +558,255 @@ def issue_dict(issue: Issue, root: Path):
     }
 
 
+def issue_line_number(issue: Issue):
+    match = LINE_NUMBER_RE.search(issue.message)
+    if not match:
+        return None
+    return int(match.group(1))
+
+
+def instruction_metrics(root: Path, path: Path, text: str, budget_config: dict):
+    lines = text.splitlines()
+    commands = list(command_lines(text))
+    budget = matching_budget(root, path, budget_config)
+    rule_bullets = count_rule_bullets(lines)
+    summary: dict[str, Any] = {
+        "path": str(path.relative_to(root)),
+        "line_count": len(lines),
+        "rule_bullet_count": rule_bullets,
+        "command_count": len(commands),
+        "budget": None,
+    }
+    if budget:
+        max_lines = budget.get("max_lines")
+        max_rule_bullets = budget.get("max_rule_bullets")
+        summary["budget"] = {
+            "pattern": budget["pattern"],
+            "severity": budget["severity"],
+            "max_lines": max_lines,
+            "line_ratio": round(len(lines) / max_lines, 3) if isinstance(max_lines, int) and max_lines else None,
+            "max_rule_bullets": max_rule_bullets,
+            "rule_bullet_ratio": round(rule_bullets / max_rule_bullets, 3)
+            if isinstance(max_rule_bullets, int) and max_rule_bullets
+            else None,
+        }
+    return summary, commands
+
+
+def recommendation(
+    number: int,
+    *,
+    severity: str,
+    category: str,
+    path: str,
+    reason: str,
+    suggested_destination: str,
+    action: str,
+    evidence: str,
+    source_rule: str | None = None,
+    line: int | None = None,
+    paths: list[str] | None = None,
+):
+    payload: dict[str, Any] = {
+        "id": f"diet-{number:03d}",
+        "severity": severity,
+        "category": category,
+        "path": path,
+        "line": line,
+        "evidence": evidence,
+        "reason": reason,
+        "suggested_destination": suggested_destination,
+        "action": action,
+    }
+    if source_rule:
+        payload["source_rule"] = source_rule
+    if paths:
+        payload["paths"] = paths
+    return payload
+
+
+def add_budget_recommendations(recommendations: list[dict[str, Any]], metrics: dict[str, Any]):
+    budget = metrics.get("budget") or {}
+    rel = metrics["path"]
+    max_lines = budget.get("max_lines")
+    line_ratio = budget.get("line_ratio")
+    if isinstance(max_lines, int) and isinstance(line_ratio, float) and line_ratio >= 0.85:
+        over = metrics["line_count"] > max_lines
+        recommendations.append(
+            recommendation(
+                len(recommendations) + 1,
+                severity="warning" if over else "info",
+                category="budget_pressure",
+                path=rel,
+                reason=(
+                    f"{rel} uses {metrics['line_count']} lines against a budget of {max_lines}."
+                ),
+                suggested_destination="scoped docs, contracts, generated reports, or task packets",
+                action="Move detailed procedures out of the route-map file and keep only the shortest durable route.",
+                evidence=f"line_ratio={line_ratio}",
+                source_rule="instruction-budget",
+            )
+        )
+
+    max_rule_bullets = budget.get("max_rule_bullets")
+    rule_ratio = budget.get("rule_bullet_ratio")
+    if isinstance(max_rule_bullets, int) and isinstance(rule_ratio, float) and rule_ratio >= 0.85:
+        over = metrics["rule_bullet_count"] > max_rule_bullets
+        recommendations.append(
+            recommendation(
+                len(recommendations) + 1,
+                severity="warning" if over else "info",
+                category="budget_pressure",
+                path=rel,
+                reason=(
+                    f"{rel} has {metrics['rule_bullet_count']} rule-like bullets "
+                    f"against a budget of {max_rule_bullets}."
+                ),
+                suggested_destination=".agent-workflows/instruction-budgets.json or scoped policy docs",
+                action="Promote repeated rules into checker config or the scoped policy document that owns them.",
+                evidence=f"rule_bullet_ratio={rule_ratio}",
+                source_rule="rule-budget",
+            )
+        )
+
+
+def add_route_map_recommendations(recommendations: list[dict[str, Any]], metrics: dict[str, Any]):
+    rel = metrics["path"]
+    if rel not in ROUTE_MAP_FILES:
+        return
+    if metrics["command_count"] >= 5:
+        recommendations.append(
+            recommendation(
+                len(recommendations) + 1,
+                severity="info",
+                category="route_map_violation",
+                path=rel,
+                reason=f"{rel} contains {metrics['command_count']} command references.",
+                suggested_destination="docs/ops runbook, Make help, or generated context report",
+                action="Keep command-heavy procedures in a runbook or target command output, and leave a short route in the instruction file.",
+                evidence=f"command_count={metrics['command_count']}",
+            )
+        )
+
+
+def issue_recommendation(recommendations: list[dict[str, Any]], issue: Issue, root: Path):
+    rel = str(issue.path.relative_to(root))
+    category_map = {
+        "instruction-budget": ("budget_pressure", "scoped docs, contracts, generated reports, or task packets"),
+        "rule-budget": ("budget_pressure", ".agent-workflows/instruction-budgets.json or scoped policy docs"),
+        "rule-bloat": ("route_map_violation", "scoped docs or task packets"),
+        "rule-provenance": ("route_map_violation", "failure-linked policy docs or task packets"),
+        "stale-command": ("stale_or_localizable_command_detail", "Make target, script, or docs freshness-owned runbook"),
+        "missing-path": ("stale_or_localizable_command_detail", "docs freshness-owned link or scoped runbook"),
+        "contradiction": ("route_map_violation", "trust-profile policy document or scoped runtime adapter"),
+    }
+    if issue.rule_id not in category_map:
+        return
+    category, destination = category_map[issue.rule_id]
+    recommendations.append(
+        recommendation(
+            len(recommendations) + 1,
+            severity=issue.severity,
+            category=category,
+            path=rel,
+            line=issue_line_number(issue),
+            reason=issue.message,
+            suggested_destination=destination,
+            action="Move or clarify the detailed rule in the owner surface, leaving the instruction file as a route map.",
+            evidence=issue.message,
+            source_rule=issue.rule_id,
+        )
+    )
+
+
+def add_duplicate_command_recommendations(
+    recommendations: list[dict[str, Any]],
+    command_usage: dict[str, set[str]],
+):
+    for command, paths in sorted(command_usage.items()):
+        if len(paths) < 2:
+            continue
+        rel_paths = sorted(paths)
+        recommendations.append(
+            recommendation(
+                len(recommendations) + 1,
+                severity="info",
+                category="duplicated_procedural_detail",
+                path=rel_paths[0],
+                paths=rel_paths,
+                reason=f"The same command is documented in {len(rel_paths)} instruction files.",
+                suggested_destination="docs/ops runbook, workflow-help output, or generated report",
+                action="Document the procedure once in the owner surface and keep only short links from runtime instruction files.",
+                evidence=command,
+            )
+        )
+
+
+def build_instruction_diet_report(
+    root: Path,
+    explicit_files: list[str] | None = None,
+    strict_paths: bool = False,
+    budget_config_file: str | None = DEFAULT_BUDGET_CONFIG,
+):
+    root = root.expanduser().resolve()
+    files = discover_files(root, explicit_files or [])
+    budget_config = load_budget_config(root, budget_config_file)
+    recommendations: list[dict[str, Any]] = []
+    file_summaries: list[dict[str, Any]] = []
+    all_issues: list[Issue] = []
+    command_usage: dict[str, set[str]] = {}
+
+    for path in files:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            issue = Issue("error", path, "file is not valid UTF-8")
+            all_issues.append(issue)
+            issue_recommendation(recommendations, issue, root)
+            continue
+
+        metrics, commands = instruction_metrics(root, path, text, budget_config)
+        issues = check_file(root, path, strict_paths, budget_config)
+        all_issues.extend(issues)
+        metrics["issue_count"] = len(issues)
+        metrics["status"] = "review" if issues else "ok"
+        file_summaries.append(metrics)
+        for command in commands:
+            command_usage.setdefault(command, set()).add(metrics["path"])
+        add_budget_recommendations(recommendations, metrics)
+        add_route_map_recommendations(recommendations, metrics)
+        for issue in issues:
+            issue_recommendation(recommendations, issue, root)
+
+    add_duplicate_command_recommendations(recommendations, command_usage)
+
+    warnings = [issue for issue in all_issues if issue.severity == "warning"]
+    errors = [issue for issue in all_issues if issue.severity == "error"]
+    return {
+        "schema_version": 1,
+        "command": "instruction-diet",
+        "repo": str(root),
+        "status": "review" if recommendations else "clean",
+        "files_checked": len(files),
+        "recommendation_count": len(recommendations),
+        "lint_summary": {
+            "error_count": len(errors),
+            "warning_count": len(warnings),
+            "issue_count": len(all_issues),
+        },
+        "files": file_summaries,
+        "recommendations": recommendations,
+        "omissions": []
+        if files
+        else [
+            {
+                "section": "instruction_files",
+                "reason": "No agent-facing instruction files were discovered.",
+            }
+        ],
+    }
+
+
 def sarif_payload(issues: list[Issue], root: Path):
     rules = {}
     results = []
@@ -609,6 +869,39 @@ def print_issues(issues: list[Issue], root: Path, output_format: str, file_count
         print(f"{issue.severity.upper()} {rel}: [{issue.rule_id}] {issue.message}")
 
 
+def print_instruction_diet_report(report: dict[str, Any], output_format: str):
+    if output_format == "json":
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return
+    if output_format == "sarif":
+        raise SystemExit("--diet does not support SARIF output; use --format text or --format json")
+
+    print("Instruction diet audit:")
+    print(f" - repo: {report['repo']}")
+    print(f" - files checked: {report['files_checked']}")
+    print(f" - status: {report['status']}")
+    print(f" - recommendations: {report['recommendation_count']}")
+    for omission in report.get("omissions", []):
+        print(f" - omission: {omission['section']}: {omission['reason']}")
+
+    recommendations = report.get("recommendations", [])
+    if not recommendations:
+        print("No instruction diet recommendations.")
+        return
+
+    print("Recommendations:")
+    for item in recommendations[:20]:
+        line = f":{item['line']}" if item.get("line") else ""
+        print(
+            f" - [{item['severity']}] {item['path']}{line} "
+            f"{item['category']} -> {item['suggested_destination']}"
+        )
+        print(f"   reason: {item['reason']}")
+        print(f"   action: {item['action']}")
+    if len(recommendations) > 20:
+        print(f" - omitted {len(recommendations) - 20} additional recommendation(s); use --format json.")
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Lint local agent instruction files")
     parser.add_argument("--root", default=".", help="Repository root to inspect")
@@ -634,6 +927,11 @@ def parse_args():
         default="text",
         help="Output format for local use or code-scanning adapters.",
     )
+    parser.add_argument(
+        "--diet",
+        action="store_true",
+        help="Emit a no-write instruction diet audit with offload recommendations.",
+    )
     return parser.parse_args()
 
 
@@ -642,6 +940,11 @@ def main():
     root = Path(args.root).expanduser().resolve()
     files = discover_files(root, args.files)
     budget_config = load_budget_config(root, args.budget_config)
+
+    if args.diet:
+        report = build_instruction_diet_report(root, args.files, args.strict_paths, args.budget_config)
+        print_instruction_diet_report(report, args.format)
+        return 0
 
     if not files:
         print("No agent instruction files found.")

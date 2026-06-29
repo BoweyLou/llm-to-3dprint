@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.local/repo-contract-kit/agent-permission-policy.schema.json",
+  "$id": "https://example.local/codex-codereview/agent-permission-policy.schema.json",
   "title": "Agent Permission Policy",
   "type": "object",
   "additionalProperties": false,
@@ -27,14 +27,6 @@
     }
   },
   "$defs": {
-    "decision": {
-      "type": "string",
-      "enum": ["allow", "deny", "approval-required"]
-    },
-    "mode": {
-      "type": "string",
-      "enum": ["none", "read-only", "allowlisted", "unrestricted"]
-    },
     "profile": {
       "type": "object",
       "additionalProperties": false,
@@ -58,7 +50,7 @@
         },
         "trust_level": {
           "type": "string",
-          "enum": ["read-only-review", "untrusted-pr", "browser-research", "write-worker", "trusted-local"]
+          "enum": ["read-only-review", "browser-research", "write-worker", "trusted-local", "untrusted-pr"]
         },
         "purpose": {
           "type": "string",
@@ -105,6 +97,14 @@
           }
         }
       }
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["allow", "deny", "approval-required"]
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["none", "read-only", "allowlisted", "unrestricted"]
     },
     "filesystem_policy": {
       "type": "object",

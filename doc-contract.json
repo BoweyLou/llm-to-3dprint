@@ -15,6 +15,18 @@
   "ignore_paths": [
     "tests/"
   ],
+  "docs_freshness": {
+    "exclude_paths": [],
+    "historical_paths": [
+      "CHANGELOG.md",
+      "docs/adr/",
+      "docs/adrs/",
+      "docs/audit/",
+      "docs/audits/",
+      "docs/archive/",
+      "docs/archives/"
+    ]
+  },
   "no_docs_needed_markers": [
     "No docs needed:"
   ],

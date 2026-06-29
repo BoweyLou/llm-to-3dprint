@@ -11,28 +11,39 @@ If you change code, you must consider whether documentation also needs to change
 If asked to review, understand, clean up, or formalize this repo, start here:
 
 1. Read `AGENTS.md`, `REVIEW.md`, and `.agent-workflows/README.md`.
-2. Run `make agent-start` to create a local startup packet under
+2. Run `kit start --json` to choose the route from current repo state and apply
+   any already-local, local-safe kit update. Use `kit start --no-update --json`
+   when a no-write startup payload is required.
+3. Run `make agent-start` to create a local startup packet under
    `.agent-workflows/runs/`.
-3. Inspect `make kit-status` and `make version-status` output when available so
-   you know the installed kit version, vendored prompt snapshot, and target repo
+4. Run `make goal-check` to map changed files to declared area contracts before
+   inferring scope from broad docs.
+5. Inspect `make kit-status` and `make version-status` output when available so
+   you know the installed kit version, workflow prompt snapshot, and target repo
    version.
-4. Inspect `docs/ops/agent-tool-network-allowlist.md` and the selected trust
+6. Inspect `docs/ops/agent-tool-network-allowlist.md` and the selected trust
    profile in `.agent-workflows/agent-permission-policy.json` before running
    review agents, browser research, or CI adapters.
-5. Inspect `docs/ops/agent-instruction-hygiene.md` before adding new
+7. Inspect `docs/ops/agent-instruction-hygiene.md` before adding new
    agent-facing rules so `AGENTS.md` stays an index instead of a context dump.
-6. Follow `.agent-workflows/repo-review.md` in the requested mode. Use
+8. Follow `.agent-workflows/repo-review.md` in the requested mode. Use
    `bootstrap` for the first review of an inherited or newly instrumented repo.
-7. Use the installed personas and prompts under `.codex/prompts/` where useful.
-8. Run `make agent-verify` and `make agent-docs-localize` before proposing code
+9. Use the installed personas and prompts under `.codex/prompts/` where useful.
+10. Run `make agent-verify` and `make agent-docs-localize` before proposing code
    changes.
-9. Produce a findings backlog before editing code.
-10. If work starts from a backlog item, issue, accepted finding, or broad human
+11. Produce a findings backlog before editing code.
+12. If work starts from a backlog item, issue, accepted finding, or broad human
    request, run `make agent-task-packet` and convert one selected item into
    scoped executable work before implementation.
-11. For write-capable implementation, run
-    `make agent-task-prepare TASK=<id> SCOPE=<paths>` before editing so the
-    worker gets an isolated branch, worktree, task packet, and receipt template.
+13. For write-capable implementation, run
+    `make agent-task-prepare TASK=<id> SCOPE=<paths>` before editing.
+
+`kit start --json` decides the route and reports `local_update` status.
+`make agent-start` is the installed target-repo packet lane, and
+`make agent-context-bundle` is the compact handoff context lane.
+`kit status --json` separates `git_worktree_state` from `kit_managed_state`;
+use the first for real Git dirt and the second for managed template/proposal
+review. Run `kit closeout-plan --json` before claiming write work is done.
 
 The prompts under `.codex/prompts/` are local copies installed by
 `repo-contract-kit`. Do not fetch prompts from another repo during normal work
@@ -76,42 +87,58 @@ kit templates during updates.
 
 ## Kit updates
 
-Use `make kit-status` to inspect the installed kit version, source ref, vendored
-`agent-workflow-kit` prompt snapshot, profiles, manifest status, managed-file
-cleanliness, and target repo version. Use
-`make kit-status KIT=/path/to/repo-contract-kit` when a local kit checkout is
-available and you need a `current`/`available` update signal. Use
-`make kit-update KIT=/path/to/repo-contract-kit` only when the user asks to
-refresh the local kit files from that checkout, or
-`make kit-refresh KIT=/path/to/repo-contract-kit` when the user wants to pull a
-clean local kit checkout first and then update. Customized managed files must be
-preserved; review proposed replacements under `.doc-contract-kit/updates/` and
-read the update report's `read_next` entries before accepting them.
-Use `make kit-explain` when ownership is unclear. The target repo owns the root
-`Makefile`; repo-contract-kit owns `.doc-contract-kit/make/repo-contract.mk`,
-which the root `Makefile` may include to expose installed kit targets.
+Use `make kit-status` to inspect installed kit, prompt snapshot, profiles,
+manifest cleanliness, and target repo version. `kit start` may apply only
+local-safe managed-file updates from the already-local tool checkout; it does
+not fetch remote/global updates. Prefer the global CLI for explicit update
+management:
+
+```bash
+kit setup
+kit status
+kit update --dry-run
+kit update
+kit target import --root /path/to/repos --dry-run
+kit target list --json
+kit update --all --dry-run
+kit worktree audit --root /path/to/repos --json
+kit worktree prune --root /path/to/repos --dry-run
+kit doctor
+```
+
+If the user asks to set up, inspect, update, or diagnose the kit, check
+`command -v kit` and run the requested `kit` subcommand from the target repo;
+do not search for a workspace script named `kit-setup`.
+
+Use `make kit-update KIT=/path/to/kit` or
+`make kit-refresh KIT=/path/to/kit` only when the global CLI is
+unavailable or a specific local checkout is required. Preserve customized
+managed files and review `.doc-contract-kit/updates/` before accepting proposed
+replacements. Use `kit update --all --apply` only after reviewing the batch
+dry-run; dirty registered targets are skipped. Use `kit target import` only for
+primary repos, with agent-worktree and archive paths excluded by default. Use
+`kit worktree audit` and `kit worktree prune --dry-run` for disposable task
+worktrees instead of enrolling them globally. Use `make kit-explain` when
+ownership is unclear.
 
 For external agent artifacts, use the source kit CLI with `--repo <path>`;
-`sidecar-init` and `--write-sidecar` store packets, plans, and receipts outside the target repo.
+`sidecar-init` and `--write-sidecar` store packets, plans, and receipts outside
+the target repo.
+For recurring automation that edits backlog or research files from a disposable
+worktree, run `make agent-automation-handoff` before cleanup. It preserves
+accepted edits as a sidecar patch and receipt and blocks primary-checkout runs
+by default.
 Use the review-risk tier from `make agent-start` to choose the smallest safe
 reviewer set. High-risk or critical changes should stay read-only until a human
 accepts a scoped implementation task.
 
-Use `make agent-task-prepare TASK=<id>` for accepted write-capable tasks. Run it
-from the primary checkout, not from inside an existing task worktree. It creates
-a sibling worktree under a task branch with the normal Codex branch prefix,
-records local in-flight metadata under `.agent-workflows/tasks/`, and warns
-when declared scope overlaps another active task.
-
-Use `make agent-task-status` before launching or handing off parallel
-write-capable tasks. It compares the local task registry with `git worktree
-list`, reports dirty or missing task worktrees, and surfaces unknown or
-overlapping active scopes.
-
-Use `make agent-task-cleanup` before manually cleaning old worktree folders. It
-audits registered task worktrees and suggests nested-worktree moves. Only set
-`TASK_CLEANUP_APPLY=1` after reviewing the dry run; use `git worktree remove`
-explicitly for clean finished worktrees.
+Use `make agent-task-prepare TASK=<id>` for accepted write-capable tasks from
+the primary checkout, not inside an existing task worktree. Use
+`make agent-task-status` before parallel work, `make agent-task-ready` before PR
+or merge handoff, and preview `agent-task-cleanup` / `agent-task-closeout`
+before setting their apply flags.
+If `DIRTY_PRIMARY_BASELINE=1` is intentional, commit or park untracked files in
+the task scope first; the task worktree is created from HEAD.
 
 ## Instruction hygiene
 
@@ -144,15 +171,6 @@ Before finishing work, run:
 - `make version-check` when behavior or release impact changed
 
 If these fail, fix the issue before considering the task complete.
-
-## Pull request expectations
-
-Every PR must clearly state:
-
-1. what changed
-2. whether docs were updated
-3. whether an ADR was added or updated
-4. if no docs changed, why not
 
 ## Important rule
 

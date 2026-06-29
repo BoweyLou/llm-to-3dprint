@@ -18,6 +18,9 @@ which sources are allowed, what output is needed, and what must not be changed.
 - Exact search plan per source: seed URLs or domains, search queries,
   inclusion terms, exclusion terms, artifact types, source-count limits, and
   evidence quality floor.
+- Novelty ledger for recurring research: prior-question fingerprints, known
+  recent topics, novelty threshold, and rejected or deferred leads from earlier
+  runs.
 - Time sensitivity and source-quality expectations.
 
 ## Source Planning Rule
@@ -33,9 +36,23 @@ Every source entry must answer:
 - which exact queries or seed URLs to use first
 - what artifact types count as evidence
 - how many sources are enough
-- what should be ignored
+- which leads to ignore
 - what quality floor is required before the evidence can affect backlog,
   review, architecture, design, ADR, risk, or task-packet proposals
+
+## Novelty Planning Rule
+
+Recurring research loops must inspect the novelty ledger before dispatching
+source agents. If the ledger shows that the current question repeats a prior
+fingerprint or recent topic, either narrow the question to a genuinely new
+angle or stop and ask for a revised brief.
+
+The ledger should stay compact. Use stable fingerprints and short summaries,
+not copied transcripts. Set `novelty_threshold` high enough that ordinary
+restatements of recent runtime, cleanup, or meta-process topics are rejected
+unless new evidence changes the decision. Carry forward rejected or deferred
+leads with the reason and next-run action so the next synthesis can avoid
+rediscovering the same idea.
 
 ## Default Source Budgets
 
@@ -96,6 +113,29 @@ Use this shape:
       "freshness": "Prefer active projects with commits or releases in the last 18 months unless the project is a stable reference."
     }
   ],
+  "novelty_ledger": {
+    "prior_question_fingerprints": ["runtime-export-boundary-2026-06"],
+    "recent_topics": [
+      {
+        "topic": "Runtime adapter boundary",
+        "summary": "Recent runs already split source-side adapter generation from install-layer selection.",
+        "last_seen_at": null,
+        "fingerprints": ["runtime-export-boundary-2026-06"],
+        "related_backlog_ids": ["AGW-081", "AGW-012"]
+      }
+    ],
+    "novelty_threshold": 70,
+    "carry_forward_leads": [
+      {
+        "title": "Repeat runtime-export backlog split",
+        "state": "rejected",
+        "reason": "Already captured by AGW-081 and AGW-012 unless new evidence changes scope.",
+        "source_evidence": ["research/agentic-workflow-review/summary.md"],
+        "next_run_action": "do-not-repeat",
+        "fingerprint": "runtime-export-boundary-2026-06"
+      }
+    ]
+  },
   "boundaries": {
     "trust_profile": "browser-research",
     "read_only": true,

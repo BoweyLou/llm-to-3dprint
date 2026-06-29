@@ -19,6 +19,9 @@ candidates, review questions, risk notes, or task-packet candidates.
 - Do not mix accepted proposals with rejected or weak leads.
 - Confirm that each accepted proposal satisfied the brief's source plan,
   including allowed domains, seed queries, evidence budget, and quality floor.
+- Confirm that each accepted proposal satisfied the novelty ledger: its
+  candidate score must clear the novelty threshold or explain why a human chose
+  to carry a lower-novelty item anyway.
 - For backlog rows, use the repo's existing priority, theme, delivery-shape, and
   status conventions.
 - For ADR candidates, include decision pressure, options, consequences, and
@@ -29,6 +32,8 @@ candidates, review questions, risk notes, or task-packet candidates.
   instead of an implementation task.
 - Do not fill a backlog merely because sources were found. Only create a work
   item when the research changes a concrete repo decision.
+- Carry rejected or deferred leads forward into the next research brief ledger;
+  do not convert them into backlog rows unless a human explicitly accepts them.
 
 ## Output
 

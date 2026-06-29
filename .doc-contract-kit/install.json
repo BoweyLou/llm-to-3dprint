@@ -1,8 +1,9 @@
 {
   "installed_at": "2026-05-21T06:43:42+00:00",
-  "kit_version": "0.4.23",
-  "last_updated_at": "2026-05-29T04:43:00+00:00",
+  "kit_version": "0.6.34",
+  "last_updated_at": "2026-06-29T22:12:46+00:00",
   "preset": "agentic",
+  "profile_config_schema_version": 1,
   "profiles": [
     "minimal",
     "local-agentic",
@@ -11,9 +12,9 @@
     "versioning"
   ],
   "prompt_snapshot": {
-    "generated_adapter": ".codex/prompts",
-    "name": "agent-workflow-kit",
-    "notes": "Records the upstream prompt/schema snapshot generated from agent-workflow-kit workflows/prompts and vendored into repo-contract-kit target-repo adapters. The +local source ref marks a working-tree snapshot.",
+    "generated_adapter": "templates/profiles/*/files/.codex/prompts",
+    "name": "workflow-source",
+    "notes": "Records the in-repo workflow prompt/schema source that repo-contract-kit ships into target-repo adapters. snapshot_sha256 is computed from snapshot_paths at install/update/status time.",
     "snapshot_paths": [
       "templates/profiles/review-prompts/files/.codex/prompts",
       "templates/profiles/test-first/files/.codex/prompts",
@@ -27,23 +28,28 @@
       "templates/common/research-source-report.schema.json",
       "templates/common/research-synthesis.schema.json"
     ],
-    "snapshot_sha256": "d76883bc9c931a6f775fa0a53edac0975f63af31e9775567399ae440c41654a4",
+    "snapshot_sha256": "979a2eb202fb391760ed8ce617b956ec5ba87a2f1c948622e0591f52b791235f",
     "source_prompt_root": "workflows/prompts",
-    "source_ref": "5f6219b7848d",
-    "source_url": "https://github.com/BoweyLou/agent-workflow-kit",
-    "vendored_at": "2026-05-25",
-    "version": "0.2.3"
+    "source_ref": "07e90cf8855d72fe7ff8b9c7c697f55d93faaa2c",
+    "source_url": "https://github.com/BoweyLou/repo-contract-kit",
+    "vendored_at": "2026-06-18",
+    "version": "0.4.60"
   },
+  "runtime_adapters": [],
   "schema_version": 1,
   "source_commits": {
-    "agent-workflow-kit": "5f6219b7848d",
-    "repo-contract-kit": "943e1e1d7716faaaaad36dc941e629b27f23adcd"
+    "repo-contract-kit": "07e90cf8855d72fe7ff8b9c7c697f55d93faaa2c",
+    "workflow-source": "07e90cf8855d72fe7ff8b9c7c697f55d93faaa2c"
   },
   "source_components": {
-    "agent-workflow-kit": {
-      "generated_adapter": ".codex/prompts",
-      "name": "agent-workflow-kit",
-      "notes": "Records the upstream prompt/schema snapshot generated from agent-workflow-kit workflows/prompts and vendored into repo-contract-kit target-repo adapters. The +local source ref marks a working-tree snapshot.",
+    "repo-contract-kit": {
+      "source_ref": "07e90cf8855d72fe7ff8b9c7c697f55d93faaa2c",
+      "version": "0.6.34"
+    },
+    "workflow-source": {
+      "generated_adapter": "templates/profiles/*/files/.codex/prompts",
+      "name": "workflow-source",
+      "notes": "Records the in-repo workflow prompt/schema source that repo-contract-kit ships into target-repo adapters. snapshot_sha256 is computed from snapshot_paths at install/update/status time.",
       "snapshot_paths": [
         "templates/profiles/review-prompts/files/.codex/prompts",
         "templates/profiles/test-first/files/.codex/prompts",
@@ -57,18 +63,14 @@
         "templates/common/research-source-report.schema.json",
         "templates/common/research-synthesis.schema.json"
       ],
-      "snapshot_sha256": "d76883bc9c931a6f775fa0a53edac0975f63af31e9775567399ae440c41654a4",
+      "snapshot_sha256": "979a2eb202fb391760ed8ce617b956ec5ba87a2f1c948622e0591f52b791235f",
       "source_prompt_root": "workflows/prompts",
-      "source_ref": "5f6219b7848d",
-      "source_url": "https://github.com/BoweyLou/agent-workflow-kit",
-      "vendored_at": "2026-05-25",
-      "version": "0.2.3"
-    },
-    "repo-contract-kit": {
-      "source_ref": "943e1e1d7716faaaaad36dc941e629b27f23adcd",
-      "version": "0.4.23"
+      "source_ref": "07e90cf8855d72fe7ff8b9c7c697f55d93faaa2c",
+      "source_url": "https://github.com/BoweyLou/repo-contract-kit",
+      "vendored_at": "2026-06-18",
+      "version": "0.4.60"
     }
   },
-  "source_ref": "943e1e1d7716faaaaad36dc941e629b27f23adcd",
-  "source_version": "0.4.23"
+  "source_ref": "07e90cf8855d72fe7ff8b9c7c697f55d93faaa2c",
+  "source_version": "0.6.34"
 }

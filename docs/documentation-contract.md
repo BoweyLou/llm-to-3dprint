@@ -76,6 +76,7 @@ Use that file to define:
 - which files are required for the docs contract
 - which paths count as documentation
 - which paths are ignored
+- which Markdown paths are historical or excluded for docs-freshness checks
 - which source paths imply API, CLI, config, or operations impact
 - which documentation paths are expected for each impact category
 

@@ -35,7 +35,7 @@ For each discussion:
 - Record item URL, title or topic, author when visible, date when visible, and
   retrieval date.
 - Summarize the concrete problem, tradeoff, or lead.
-- Identify any linked primary source that should be verified separately.
+- Identify any linked primary source that should be verified separately because discussion threads are secondary evidence.
 - Mark anecdotal claims as `lead` unless backed by a primary source.
 - Prefer patterns that recur across multiple comments or connect to official
   docs, repos, papers, or incident writeups.

@@ -27,6 +27,19 @@ VALID_TEST_RESULTS = {"red-green", "green-only", "not-applicable", "not-run", "b
 VALID_FINDING_PRIORITIES = {"P0", "P1", "P2", "P3"}
 VALID_FINDING_CONFIDENCE = {"high", "medium", "low"}
 VALID_FINDING_STATUS = {"open", "accepted", "rejected", "fixed", "deferred", "duplicate"}
+VALID_COMMENT_ONLY_RESULTS = {
+    "comment-only",
+    "comment-and-explanation-note",
+    "explanation-note-only",
+    "fail",
+    "uncertain",
+    "not-run",
+}
+PASSING_COMMENT_ONLY_RESULTS = {
+    "comment-only",
+    "comment-and-explanation-note",
+    "explanation-note-only",
+}
 
 
 def load_json(path: Path) -> Any:
@@ -59,6 +72,15 @@ def as_list(value: Any) -> list[Any]:
     return value if isinstance(value, list) else []
 
 
+def string_list(value: Any, path: str, errors: list[str]) -> list[str]:
+    require(isinstance(value, list), f"{path} must be an array", errors)
+    if not isinstance(value, list):
+        return []
+    for index, item in enumerate(value):
+        require(isinstance(item, str) and bool(item.strip()), f"{path}[{index}] must be a non-empty string", errors)
+    return [item for item in value if isinstance(item, str)]
+
+
 def validate_command(command: Any, index: int, errors: list[str]) -> None:
     require(isinstance(command, dict), f"evidence.commands[{index}] must be an object", errors)
     if not isinstance(command, dict):
@@ -80,6 +102,206 @@ def validate_finding(finding: Any, index: int, errors: list[str]) -> None:
     require(finding.get("status") in VALID_FINDING_STATUS, f"findings[{index}].status is invalid", errors)
     evidence = finding.get("evidence")
     require(isinstance(evidence, list) and bool(evidence), f"findings[{index}].evidence must be a non-empty array", errors)
+
+
+def validate_comment_only_verification(
+    verification: Any,
+    run: dict[str, Any],
+    scope: dict[str, Any],
+    evidence: dict[str, Any],
+    strict: bool,
+    errors: list[str],
+) -> None:
+    learning_comments = run.get("mode") == "learning-comments"
+    if verification is None:
+        if strict and learning_comments:
+            errors.append("strict learning-comments receipts require evidence.comment_only_verification")
+        return
+
+    require(isinstance(verification, dict), "evidence.comment_only_verification must be an object", errors)
+    if not isinstance(verification, dict):
+        return
+
+    checked = verification.get("checked")
+    result = verification.get("result")
+    behavior_assertion = verification.get("behavior_change_assertion")
+    source_files_changed = verification.get("source_files_changed")
+    no_source_edit_reason = verification.get("no_source_edit_reason")
+
+    require(isinstance(checked, bool), "evidence.comment_only_verification.checked must be boolean", errors)
+    require(result in VALID_COMMENT_ONLY_RESULTS, "evidence.comment_only_verification.result is invalid", errors)
+    require(
+        behavior_assertion in (True, False),
+        "evidence.comment_only_verification.behavior_change_assertion must be boolean",
+        errors,
+    )
+    require(
+        source_files_changed in (True, False),
+        "evidence.comment_only_verification.source_files_changed must be boolean",
+        errors,
+    )
+    require(
+        no_source_edit_reason is None or isinstance(no_source_edit_reason, str),
+        "evidence.comment_only_verification.no_source_edit_reason must be string or null",
+        errors,
+    )
+
+    diff_scope = string_list(verification.get("diff_scope"), "evidence.comment_only_verification.diff_scope", errors)
+    changed_reviewed = string_list(
+        verification.get("changed_files_reviewed"),
+        "evidence.comment_only_verification.changed_files_reviewed",
+        errors,
+    )
+    comment_only_paths = string_list(
+        verification.get("comment_only_paths"),
+        "evidence.comment_only_verification.comment_only_paths",
+        errors,
+    )
+    explanation_note_paths = string_list(
+        verification.get("explanation_note_paths"),
+        "evidence.comment_only_verification.explanation_note_paths",
+        errors,
+    )
+    non_comment_paths = string_list(
+        verification.get("non_comment_paths"),
+        "evidence.comment_only_verification.non_comment_paths",
+        errors,
+    )
+    evidence_commands = string_list(
+        verification.get("evidence_commands"),
+        "evidence.comment_only_verification.evidence_commands",
+        errors,
+    )
+    uncertainties = string_list(
+        verification.get("uncertainties"),
+        "evidence.comment_only_verification.uncertainties",
+        errors,
+    )
+
+    explanations = verification.get("non_comment_path_explanations")
+    require(
+        isinstance(explanations, list),
+        "evidence.comment_only_verification.non_comment_path_explanations must be an array",
+        errors,
+    )
+    explanation_map: dict[str, dict[str, Any]] = {}
+    if isinstance(explanations, list):
+        for index, item in enumerate(explanations):
+            require(
+                isinstance(item, dict),
+                f"evidence.comment_only_verification.non_comment_path_explanations[{index}] must be an object",
+                errors,
+            )
+            if not isinstance(item, dict):
+                continue
+            path = item.get("path")
+            reason = item.get("reason")
+            behavior_safe = item.get("behavior_safe")
+            require(
+                isinstance(path, str) and bool(path.strip()),
+                f"evidence.comment_only_verification.non_comment_path_explanations[{index}].path is required",
+                errors,
+            )
+            require(
+                isinstance(reason, str) and bool(reason.strip()),
+                f"evidence.comment_only_verification.non_comment_path_explanations[{index}].reason is required",
+                errors,
+            )
+            require(
+                behavior_safe in (True, False),
+                f"evidence.comment_only_verification.non_comment_path_explanations[{index}].behavior_safe must be boolean",
+                errors,
+            )
+            if isinstance(path, str):
+                explanation_map[path] = item
+
+    if not (strict and learning_comments):
+        return
+
+    require(scope.get("behavior_change") is False, "strict learning-comments receipts require scope.behavior_change=false", errors)
+    require(checked is True, "strict learning-comments receipts require evidence.comment_only_verification.checked=true", errors)
+    require(
+        result in PASSING_COMMENT_ONLY_RESULTS,
+        "strict learning-comments receipts require comment-only verification result to prove comment-only or explanation-note-only changes",
+        errors,
+    )
+    require(
+        behavior_assertion is False,
+        "strict learning-comments receipts require behavior_change_assertion=false",
+        errors,
+    )
+    require(bool(diff_scope), "strict learning-comments receipts require comment-only diff_scope evidence", errors)
+    require(bool(evidence_commands), "strict learning-comments receipts require comment-only evidence_commands", errors)
+
+    command_names = {
+        command.get("command")
+        for command in as_list(evidence.get("commands"))
+        if isinstance(command, dict) and isinstance(command.get("command"), str)
+    }
+    missing_commands = sorted(set(evidence_commands) - command_names)
+    require(
+        not missing_commands,
+        f"comment_only_verification.evidence_commands not found in evidence.commands: {', '.join(missing_commands)}",
+        errors,
+    )
+
+    changed_files = string_list(scope.get("changed_files"), "scope.changed_files", errors)
+    missing_reviewed = sorted(set(changed_files) - set(changed_reviewed))
+    require(
+        not missing_reviewed,
+        f"comment_only_verification.changed_files_reviewed must include scope.changed_files: {', '.join(missing_reviewed)}",
+        errors,
+    )
+
+    if result == "comment-only":
+        require(not non_comment_paths, "comment-only verification cannot list non_comment_paths", errors)
+        require(not explanation_note_paths, "comment-only verification cannot list explanation_note_paths", errors)
+    if result in {"comment-and-explanation-note", "explanation-note-only"}:
+        require(
+            not set(explanation_note_paths) - set(non_comment_paths),
+            "explanation_note_paths must also be listed in non_comment_paths",
+            errors,
+        )
+    if result == "explanation-note-only":
+        require(
+            source_files_changed is False,
+            "explanation-note-only verification requires source_files_changed=false",
+            errors,
+        )
+        require(not comment_only_paths, "explanation-note-only verification cannot list comment_only_paths", errors)
+
+    if not changed_files:
+        require(
+            result == "explanation-note-only",
+            "learning-comments receipts with no changed files must use result=explanation-note-only",
+            errors,
+        )
+        require(
+            source_files_changed is False,
+            "learning-comments receipts with no changed files require source_files_changed=false",
+            errors,
+        )
+        require(
+            isinstance(no_source_edit_reason, str) and bool(no_source_edit_reason.strip()),
+            "learning-comments receipts with no changed files require no_source_edit_reason",
+            errors,
+        )
+
+    unexplained_non_comment = sorted(
+        path
+        for path in non_comment_paths
+        if path not in explanation_map or explanation_map[path].get("behavior_safe") is not True
+    )
+    require(
+        not unexplained_non_comment,
+        f"non_comment_paths require behavior_safe explanations: {', '.join(unexplained_non_comment)}",
+        errors,
+    )
+    require(
+        not uncertainties,
+        "strict learning-comments receipts cannot prove comment-only behavior while uncertainties remain",
+        errors,
+    )
 
 
 def validate_receipt(receipt: Any, strict: bool) -> list[str]:
@@ -109,6 +331,20 @@ def validate_receipt(receipt: Any, strict: bool) -> list[str]:
     scope = as_dict(receipt.get("scope"))
     require(bool(scope.get("repo_root")), "scope.repo_root is required", errors)
     require(isinstance(scope.get("changed_files"), list), "scope.changed_files must be an array", errors)
+    behavior_change = scope.get("behavior_change")
+    require(
+        behavior_change in (True, False, None),
+        "scope.behavior_change must be boolean or null when present",
+        errors,
+    )
+
+    harness_metrics = receipt.get("harness_metrics")
+    if harness_metrics is not None:
+        require(isinstance(harness_metrics, dict), "harness_metrics must be an object when present", errors)
+        metrics = as_dict(harness_metrics)
+        for field in ("context_file_count", "commands_run_count", "changed_file_count"):
+            if field in metrics:
+                require(isinstance(metrics[field], int) and metrics[field] >= 0, f"harness_metrics.{field} must be a non-negative integer", errors)
 
     evidence = as_dict(receipt.get("evidence"))
     commands = evidence.get("commands")
@@ -133,8 +369,23 @@ def validate_receipt(receipt: Any, strict: bool) -> list[str]:
     if tests.get("result") == "red-green":
         require(bool(tests.get("failing_test_evidence")), "red-green tests require failing_test_evidence", errors)
         require(bool(tests.get("passing_test_evidence")), "red-green tests require passing_test_evidence", errors)
+    if strict and behavior_change is True and tests.get("result") != "red-green":
+        require(
+            bool(tests.get("skip_reason")),
+            "strict mode requires red/green evidence or tests.skip_reason for behavior-changing work",
+            errors,
+        )
     if strict and tests.get("result") in {"not-run", "blocked", "green-only"}:
         require(bool(tests.get("skip_reason")), "strict mode requires tests.skip_reason when red/green evidence is absent", errors)
+
+    validate_comment_only_verification(
+        evidence.get("comment_only_verification"),
+        run,
+        scope,
+        evidence,
+        strict,
+        errors,
+    )
 
     findings = as_list(receipt.get("findings"))
     for index, finding in enumerate(findings):

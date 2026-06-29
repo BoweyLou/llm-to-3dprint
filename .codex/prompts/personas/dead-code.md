@@ -23,7 +23,7 @@ Investigation method:
 Red flags:
 - File is not imported, exported, executed, documented, or covered by tests.
 - Config key is read nowhere.
-- Feature flag is always true or always false.
+- Feature flag is permanently true or permanently false.
 - CLI command is documented but not registered, or registered but undocumented and untested.
 - Old compatibility path no longer has a caller or migration route.
 - Tests construct fixtures for removed behavior.
@@ -38,4 +38,3 @@ Output:
 - Confidence category for each candidate: safe delete, likely dead, uncertain, intentionally retained.
 - Verification needed before deletion.
 ```
-

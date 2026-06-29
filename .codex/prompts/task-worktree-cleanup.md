@@ -14,7 +14,7 @@ Inputs:
   available
 - Output from `make agent-task-cleanup` when available
 - Current task metadata under `.agent-workflows/tasks/`
-- Human constraints about which task branches must be preserved
+- Human constraints about task branches to preserve
 
 Mission:
 Produce a safe cleanup plan for existing task worktrees. Preserve useful work,
@@ -26,7 +26,7 @@ Rules:
 - Start from the primary checkout. Do not run prepare, cleanup, remove, or move
   commands from inside a task worktree unless a command explicitly requires that
   path.
-- Never delete a worktree directory through manual filesystem deletion.
+- Never delete a worktree directory through manual filesystem deletion because Git worktree metadata and unmerged work can be lost.
 - Treat every dirty worktree as preserve-and-inspect unless the human explicitly
   approves disposal.
 - Classify each registered worktree as `keep`, `move-flat`, `finish-or-merge`,

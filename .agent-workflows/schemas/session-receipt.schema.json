@@ -89,6 +89,9 @@
         "base_ref": {
           "type": ["string", "null"]
         },
+        "behavior_change": {
+          "type": ["boolean", "null"]
+        },
         "changed_files": {
           "type": "array",
           "items": {
@@ -142,6 +145,66 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "coordination": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["active_task_count", "active_tasks", "overlap_warnings"],
+      "properties": {
+        "active_task_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "active_tasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "overlap_warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "owner": {
+          "type": ["string", "null"]
+        },
+        "session_id": {
+          "type": ["string", "null"]
+        },
+        "heartbeat_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "lease_expires_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "harness_metrics": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "context_file_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "commands_run_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "changed_file_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "token_budget": {
+          "type": "object",
+          "additionalProperties": true
         }
       }
     },
@@ -207,6 +270,106 @@
               "type": ["string", "null"]
             }
           }
+        },
+        "comment_only_verification": {
+          "type": "object",
+          "description": "Machine-readable proof for learning-comments runs that changed files are comments only, explanation-note only, or an explicitly documented mix with no behavior change.",
+          "additionalProperties": false,
+          "required": [
+            "checked",
+            "result",
+            "diff_scope",
+            "behavior_change_assertion",
+            "changed_files_reviewed",
+            "comment_only_paths",
+            "explanation_note_paths",
+            "non_comment_paths",
+            "non_comment_path_explanations",
+            "source_files_changed",
+            "evidence_commands",
+            "uncertainties"
+          ],
+          "properties": {
+            "checked": {
+              "type": "boolean"
+            },
+            "result": {
+              "type": "string",
+              "enum": [
+                "comment-only",
+                "comment-and-explanation-note",
+                "explanation-note-only",
+                "fail",
+                "uncertain",
+                "not-run"
+              ]
+            },
+            "diff_scope": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Files, directories, or working-tree scopes whose diff was inspected for comment-only behavior."
+            },
+            "behavior_change_assertion": {
+              "type": "boolean",
+              "description": "The run's explicit assertion about behavior change; strict learning-comments receipts require false."
+            },
+            "changed_files_reviewed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "comment_only_paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Changed source files verified to contain only comment or comment-adjacent whitespace edits."
+            },
+            "explanation_note_paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Non-source explanation-note artifacts produced instead of noisy inline comments."
+            },
+            "non_comment_paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Changed paths that are not comment-only source edits, such as explanation notes."
+            },
+            "non_comment_path_explanations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/non_comment_path_explanation"
+              }
+            },
+            "source_files_changed": {
+              "type": "boolean"
+            },
+            "no_source_edit_reason": {
+              "type": ["string", "null"],
+              "description": "Required by strict validation when a learning-comments run produced an explanation note without changing files."
+            },
+            "evidence_commands": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Commands, also present in evidence.commands, used to inspect the comment-only diff."
+            },
+            "uncertainties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Unresolved uncertainty that prevents strict comment-only proof when non-empty."
+            }
+          }
         }
       }
     },
@@ -255,6 +418,23 @@
         },
         "notes": {
           "type": "string"
+        }
+      }
+    },
+    "non_comment_path_explanation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "reason", "behavior_safe"],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "behavior_safe": {
+          "type": "boolean",
+          "description": "True only when this non-comment path is explanation evidence and cannot change runtime behavior."
         }
       }
     },

@@ -24,6 +24,9 @@ Reviewers must not:
 - access secrets or CI secret contexts
 - make network calls outside a documented allowlist
 
+Local-model reviewers follow the same read-only boundary. A local or
+self-hosted model choice changes the data path, not the mutation policy.
+
 ## Write-Capable Escalation
 
 Escalate to a write-capable worker only after:
@@ -43,6 +46,10 @@ Every review run should record:
 - commands run and their result
 - risk tier and selected trust profile
 - selected personas
+- actual data boundary, model/provider expectations, capability caveats, and
+  escalation decision when a `local-only`, `self-hosted`,
+  `remote-openai-compatible`, `hosted-provider`, or `unknown` model/provider
+  boundary was used
 - findings with evidence and false-positive notes
 - confirmation that no file writes, git mutations, account mutations, or
   non-allowlisted network calls occurred

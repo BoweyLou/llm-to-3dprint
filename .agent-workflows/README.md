@@ -93,10 +93,21 @@ make agent-start
 make agent-run-review AGENT=manual
 make kit-status
 make kit-explain
+make agent-next
+make backlog-status
+make backlog-check
 make docs-check
+make docs-freshness
 make agent-docs-lint
 make agent-docs-localize
 make agent-task-packet
+make agent-task-packet-from-backlog BACKLOG_ID=<id>
+make agent-task-status
+make agent-task-prepare TASK=<id> SCOPE=<paths>
+make agent-task-heartbeat TASK=<id>
+make agent-task-finish TASK=<id> TASK_RECEIPT=<path>
+make agent-task-closeout
+make agent-token-budget
 make agent-receipt-verify
 make version-check
 ```
@@ -107,17 +118,42 @@ If your repo does not use `make`, run the scripts directly:
 python3 scripts/check_doc_impact.py --working-tree
 python3 scripts/agent_start.py --mode bootstrap
 python3 scripts/agent_review_run.py --mode bootstrap --agent manual
+python3 scripts/repo_contract_kit.py agent-next --repo .
+python3 scripts/repo_contract_kit.py backlog-status --repo .
+python3 scripts/repo_contract_kit.py backlog-check --repo .
 python3 scripts/verify_agent_receipt.py --strict
 python3 scripts/kit_status.py
 python3 scripts/kit_status.py --explain
+python3 scripts/check_docs_freshness.py
 python3 scripts/lint_agent_docs.py --strict-paths
 python3 scripts/localize_doc_impact.py --working-tree --json
+python3 scripts/check_token_budget.py
 python3 scripts/version.py check
 ```
 
 Use `make agent-task-packet` when a backlog item, Keryx task, issue, review
 finding, or human request needs scope, acceptance criteria, docs impact, risk,
 and approval state before implementation.
+
+Use `make backlog-status` and `make backlog-check` when the repo has a
+portable Markdown or CSV backlog source. `backlog-status` prints the selected
+source and candidate paths that exist in the current checkout. Use
+`make agent-next` when returning to a dirty checkout because it combines the
+selected backlog source, active task metadata, and working-tree state.
+
+Use `make docs-freshness` for executable documentation checks beyond
+path-based docs impact: local Markdown links, documented Make targets, script
+references, schema references, and optional semantic receipt requirements.
+Use `make agent-token-budget` to report agent-facing context footprint.
+
+Long-running write workers should refresh task leases with
+`make agent-task-heartbeat TASK=<id>` and close task metadata with
+`make agent-task-finish`, `make agent-task-block`, or
+`make agent-task-abandon`.
+
+Use `make agent-task-closeout` after final receipt evidence is durable and the
+task branch is reviewed or merged. It previews clean finished sibling worktrees
+by default; set `TASK_CLOSEOUT_APPLY=1` only after reviewing the candidates.
 
 ## Updates And Versioning
 
@@ -126,7 +162,7 @@ kit-managed and which files are target-owned. To update from a newer local kit
 checkout, run:
 
 ```bash
-make kit-update KIT=/path/to/repo-contract-kit
+make kit-update KIT=/path/to/kit
 ```
 
 The updater only replaces clean managed files. Customized files are preserved and

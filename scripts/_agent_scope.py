@@ -4,7 +4,7 @@ import re
 def parse_scope(value: str):
     if not value:
         return []
-    parts = re.split(r"[,\n]", value)
+    parts = re.split(r"[,\s]+", value)
     return [part.strip().strip("/") for part in parts if part.strip().strip("/")]
 
 

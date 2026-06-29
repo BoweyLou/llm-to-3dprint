@@ -29,5 +29,5 @@ Output:
 - Weak tests or false confidence.
 - Missing high-value tests.
 - Red/green receipt completeness.
-- Required fixes before merge.
+- Fixes before merge.
 ```

@@ -35,6 +35,5 @@ For each remediation batch, produce:
 End with:
 - Recommended first batch
 - Why it is first
-- What should not be touched in that batch
+- Protected areas for that batch
 ```
-

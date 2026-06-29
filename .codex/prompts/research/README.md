@@ -19,10 +19,17 @@ artifact types, and evidence quality floors for each source family. If those are
 missing, the source agent should stop and ask for a narrower brief instead of
 searching broadly.
 
+For recurring backlog research, the brief also carries a novelty ledger:
+prior-question fingerprints, recent-topic summaries, a numeric novelty
+threshold, and rejected or deferred leads to carry forward. Synthesis must
+score multiple candidate ideas against that ledger before proposing backlog
+edits, reject low-novelty repeats, and keep rejected or deferred leads visible
+for the next run.
+
 ## Prompts
 
 - `research-brief.md`: Define the research question, allowed sources, output
-  target, trust profile, and stop conditions.
+  target, trust profile, novelty ledger, and stop conditions.
 - `source-github.md`: Collect implementation patterns from public repositories,
   issues, pull requests, discussions, and release notes.
 - `source-arxiv.md`: Collect paper-backed architecture, method, evaluation, or
@@ -31,8 +38,8 @@ searching broadly.
   leads from Hacker News discussions.
 - `source-official-docs.md`: Collect high-confidence facts from official docs,
   standards, release notes, and primary repositories.
-- `research-synthesis.md`: Deduplicate source reports and rank evidence-backed
-  proposals.
+- `research-synthesis.md`: Deduplicate source reports, score candidate ideas,
+  and rank evidence-backed proposals.
 - `research-to-backlog.md`: Convert accepted research proposals into backlog,
   review, design, ADR, risk, or task-packet candidates.
 
@@ -45,6 +52,6 @@ marketing as weak signals unless backed by primary evidence.
 
 ## Output Contracts
 
-- Research briefs should conform to `schemas/research-brief.schema.json`.
-- Source reports should conform to `schemas/research-source-report.schema.json`.
-- Syntheses should conform to `schemas/research-synthesis.schema.json`.
+- Use `schemas/research-brief.schema.json` for research briefs.
+- Use `schemas/research-source-report.schema.json` for source reports.
+- Use `schemas/research-synthesis.schema.json` for syntheses.
