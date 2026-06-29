@@ -1,0 +1,74 @@
+{
+  "installed_at": "2026-05-21T06:43:42+00:00",
+  "kit_version": "0.4.23",
+  "last_updated_at": "2026-05-29T04:43:00+00:00",
+  "preset": "agentic",
+  "profiles": [
+    "minimal",
+    "local-agentic",
+    "review-prompts",
+    "test-first",
+    "versioning"
+  ],
+  "prompt_snapshot": {
+    "generated_adapter": ".codex/prompts",
+    "name": "agent-workflow-kit",
+    "notes": "Records the upstream prompt/schema snapshot generated from agent-workflow-kit workflows/prompts and vendored into repo-contract-kit target-repo adapters. The +local source ref marks a working-tree snapshot.",
+    "snapshot_paths": [
+      "templates/profiles/review-prompts/files/.codex/prompts",
+      "templates/profiles/test-first/files/.codex/prompts",
+      "templates/profiles/local-agentic/files/.agent-workflows",
+      "templates/common/persona-manifest.schema.json",
+      "templates/common/review-synthesis.schema.json",
+      "templates/common/review-risk.schema.json",
+      "templates/common/session-receipt.schema.json",
+      "templates/common/task-packet.schema.json",
+      "templates/common/research-brief.schema.json",
+      "templates/common/research-source-report.schema.json",
+      "templates/common/research-synthesis.schema.json"
+    ],
+    "snapshot_sha256": "d76883bc9c931a6f775fa0a53edac0975f63af31e9775567399ae440c41654a4",
+    "source_prompt_root": "workflows/prompts",
+    "source_ref": "5f6219b7848d",
+    "source_url": "https://github.com/BoweyLou/agent-workflow-kit",
+    "vendored_at": "2026-05-25",
+    "version": "0.2.3"
+  },
+  "schema_version": 1,
+  "source_commits": {
+    "agent-workflow-kit": "5f6219b7848d",
+    "repo-contract-kit": "943e1e1d7716faaaaad36dc941e629b27f23adcd"
+  },
+  "source_components": {
+    "agent-workflow-kit": {
+      "generated_adapter": ".codex/prompts",
+      "name": "agent-workflow-kit",
+      "notes": "Records the upstream prompt/schema snapshot generated from agent-workflow-kit workflows/prompts and vendored into repo-contract-kit target-repo adapters. The +local source ref marks a working-tree snapshot.",
+      "snapshot_paths": [
+        "templates/profiles/review-prompts/files/.codex/prompts",
+        "templates/profiles/test-first/files/.codex/prompts",
+        "templates/profiles/local-agentic/files/.agent-workflows",
+        "templates/common/persona-manifest.schema.json",
+        "templates/common/review-synthesis.schema.json",
+        "templates/common/review-risk.schema.json",
+        "templates/common/session-receipt.schema.json",
+        "templates/common/task-packet.schema.json",
+        "templates/common/research-brief.schema.json",
+        "templates/common/research-source-report.schema.json",
+        "templates/common/research-synthesis.schema.json"
+      ],
+      "snapshot_sha256": "d76883bc9c931a6f775fa0a53edac0975f63af31e9775567399ae440c41654a4",
+      "source_prompt_root": "workflows/prompts",
+      "source_ref": "5f6219b7848d",
+      "source_url": "https://github.com/BoweyLou/agent-workflow-kit",
+      "vendored_at": "2026-05-25",
+      "version": "0.2.3"
+    },
+    "repo-contract-kit": {
+      "source_ref": "943e1e1d7716faaaaad36dc941e629b27f23adcd",
+      "version": "0.4.23"
+    }
+  },
+  "source_ref": "943e1e1d7716faaaaad36dc941e629b27f23adcd",
+  "source_version": "0.4.23"
+}

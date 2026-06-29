@@ -14,3 +14,6 @@ htmlcov/
 
 .mypy_cache/
 .ruff_cache/
+
+# Local slicer command output
+/result.json

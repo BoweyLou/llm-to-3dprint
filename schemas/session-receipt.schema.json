@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/codex-codereview/session-receipt.schema.json",
+  "title": "Local Agent Session Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run",
+    "tooling",
+    "scope",
+    "evidence",
+    "findings",
+    "disposition"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "started_at", "mode"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "bootstrap",
+            "drift",
+            "pull-request",
+            "release-gate",
+            "learning-comments",
+            "test-first",
+            "verification"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pass", "pass-with-caveats", "fail", "blocked", "not-run"]
+        }
+      }
+    },
+    "tooling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agent_tool", "local_only"],
+      "properties": {
+        "agent_tool": {
+          "type": "string",
+          "description": "The local coding tool that ran the workflow, for example codex, ampcode, claude-code, aider, or manual."
+        },
+        "agent_tool_version": {
+          "type": ["string", "null"]
+        },
+        "local_only": {
+          "type": "boolean",
+          "description": "Must be true when the run was completed without GitHub Actions or hosted CI."
+        },
+        "network_used": {
+          "type": "boolean",
+          "default": false
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo_root", "changed_files"],
+      "properties": {
+        "repo_root": {
+          "type": "string"
+        },
+        "base_ref": {
+          "type": ["string", "null"]
+        },
+        "changed_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowed_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "protected_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "review_risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["risk_tier", "trust_profile", "triggers"],
+      "properties": {
+        "risk_tier": {
+          "type": ["string", "null"],
+          "enum": ["low", "medium", "high", "critical", null]
+        },
+        "trust_profile": {
+          "type": ["string", "null"]
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "network_or_tool_allowlist_checked": {
+          "type": "boolean"
+        },
+        "mutation_boundary_checked": {
+          "type": "boolean"
+        },
+        "data_boundary_checked": {
+          "type": "boolean"
+        },
+        "approved_deviations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commands", "docs_impact", "tests"],
+      "properties": {
+        "files_inspected": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/command_result"
+          }
+        },
+        "docs_impact": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["checked", "result"],
+          "properties": {
+            "checked": {
+              "type": "boolean"
+            },
+            "result": {
+              "type": "string",
+              "enum": ["pass", "fail", "waived", "not-applicable", "not-run"]
+            },
+            "categories": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "waiver_reason": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "tests": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["result"],
+          "properties": {
+            "result": {
+              "type": "string",
+              "enum": ["red-green", "green-only", "not-applicable", "not-run", "blocked"]
+            },
+            "failing_test_evidence": {
+              "type": ["string", "null"]
+            },
+            "passing_test_evidence": {
+              "type": ["string", "null"]
+            },
+            "generated_test_provenance": {
+              "type": ["string", "null"]
+            },
+            "skip_reason": {
+              "type": ["string", "null"]
+            }
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "disposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "next_actions"],
+      "properties": {
+        "summary": {
+          "type": "string"
+        },
+        "next_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "human_approval_required": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    }
+  },
+  "$defs": {
+    "command_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "result"],
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "result": {
+          "type": "string",
+          "enum": ["pass", "fail", "not-run", "blocked"]
+        },
+        "exit_code": {
+          "type": ["integer", "null"]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "priority",
+        "area",
+        "title",
+        "confidence",
+        "evidence",
+        "recommendation",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["P0", "P1", "P2", "P3"]
+        },
+        "area": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "recommendation": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["open", "accepted", "rejected", "fixed", "deferred", "duplicate"]
+        },
+        "false_positive_notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
