@@ -1,0 +1,29 @@
+part_name=portable_display_portrait_stand
+material=PETG
+target_bed_mm=220
+screen_tilt_deg=15
+slot_width_mm=12.5
+felt_pad_allowance_mm=1.5
+cable_turn_depth_mm=75
+port_keepout=right_half_bottom
+monitor_bottom_z_mm=32
+plug_body_clearance_height_mm=28
+cable_channel_width_mm=78
+right_foot_cable_channel_world_x_mm=24..102
+front_fascia_cable_pocket_world_x_mm=-23..119
+fit_coupon_cable_channel_x_mm=-16..52
+backrest_front_base_y_mm=4.64359
+front_fascia_assembled_width_mm=262
+front_fascia_height_mm=32
+front_fascia_print_rotation_deg=45
+skirt_spacer_height_mm=24
+skirt_spacer_assembled_top_z_mm=32
+skirt_spacer_top_depth_mm=13.9
+right_skirt_spacer_world_x_mm=106..134
+fit_coupon: 110 x 142 x 66 mm
+front_fascia_skirt: 213.952 x 213.952 x 32 mm
+left_foot: 108 x 134 x 126 mm
+rear_bridge: 212 x 18 x 12 mm
+right_foot: 108 x 134 x 126 mm
+skirt_spacer_left: 42 x 20.331 x 24 mm
+skirt_spacer_right: 28 x 20.331 x 24 mm

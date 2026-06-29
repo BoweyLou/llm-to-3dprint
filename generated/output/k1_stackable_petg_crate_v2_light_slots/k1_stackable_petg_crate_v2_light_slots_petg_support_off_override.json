@@ -1,0 +1,18 @@
+{
+  "type": "process",
+  "name": "K1 V2 crate PETG support-off no-brim override",
+  "enable_support": "0",
+  "support_on_build_plate_only": "0",
+  "support_type": "normal(auto)",
+  "brim_type": "no_brim",
+  "brim_width": "0",
+  "skirt_loops": "0",
+  "wall_loops": "2",
+  "sparse_infill_density": "8%",
+  "nozzle_temperature": "250",
+  "nozzle_temperature_initial_layer": "250",
+  "hot_plate_temp": "70",
+  "hot_plate_temp_initial_layer": "70",
+  "textured_plate_temp": "70",
+  "textured_plate_temp_initial_layer": "70"
+}

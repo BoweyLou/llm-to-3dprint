@@ -1,0 +1,71 @@
+{
+  "part_name": "k1_stackable_petg_storage_box_quarter_validation",
+  "purpose": "Four printable quarter-size storage box validation copies for stacking and visibility checks.",
+  "target_printer": "Creality K1",
+  "target_build_volume_mm": [
+    220.0,
+    220.0,
+    250.0
+  ],
+  "outputs": {
+    "single_stl": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_storage_box/k1_stackable_petg_storage_box_quarter_validation_single.stl",
+    "single_step": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_storage_box/k1_stackable_petg_storage_box_quarter_validation_single.step",
+    "four_on_plate_stl": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_storage_box/k1_stackable_petg_storage_box_quarter_validation_four_on_plate.stl",
+    "four_on_plate_step": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_storage_box/k1_stackable_petg_storage_box_quarter_validation_four_on_plate.step"
+  },
+  "single_bounds_mm": {
+    "min_x": -27.0,
+    "max_x": 27.0,
+    "min_y": -27.0,
+    "max_y": 27.0,
+    "min_z": 0.0,
+    "max_z": 59.5,
+    "size": [
+      54.0,
+      54.0,
+      59.5
+    ]
+  },
+  "four_on_plate_bounds_mm": {
+    "min_x": -63.0,
+    "max_x": 63.0,
+    "min_y": -63.0,
+    "max_y": 63.0,
+    "min_z": 0.0,
+    "max_z": 59.5,
+    "size": [
+      126.0,
+      126.0,
+      59.5
+    ]
+  },
+  "quarter_validation_dimensions_mm": {
+    "top_outer": 54.0,
+    "bottom_locator": 50.5,
+    "height": 59.5,
+    "wall_thickness": 1.2,
+    "base_thickness": 1.6,
+    "top_opening": 52.0,
+    "stack_clearance_per_side": 0.75
+  },
+  "features": {
+    "copy_count": 4,
+    "visibility_hole_shape": "diamond",
+    "visibility_hole_width_mm": 6.0,
+    "visibility_hole_height_mm": 8.0,
+    "front_back_visibility_hole_count": 6,
+    "side_visibility_hole_count": 5,
+    "hand_slot_length_mm": 16.0,
+    "hand_slot_height_mm": 7.0,
+    "label_plaque_width_mm": 28.0,
+    "label_plaque_height_mm": 12.0
+  },
+  "estimated_single_cad_mass_g": 31.41,
+  "estimated_four_cad_mass_g": 125.64,
+  "print_notes": [
+    "Print the four-on-plate STL upright as one validation job.",
+    "Use PETG with supports off.",
+    "The mini boxes are quarter-envelope sized, but minimum wall and stack dimensions are kept printable.",
+    "Validate stacking by checking all four combinations, then by stacking all four in one column."
+  ]
+}

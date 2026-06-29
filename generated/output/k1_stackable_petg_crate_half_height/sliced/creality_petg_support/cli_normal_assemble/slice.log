@@ -1,0 +1,18 @@
+[2026-06-07 10:29:18.573832] [0x00000001fbdf6c40] [trace]   Initializing StaticPrintConfigs
+[2026-06-07 10:29:18.580154] [0x00000001fbdf6c40] [error]   main start
+[2026-06-07 10:29:18.580173] [0x00000001fbdf6c40] [error]   main check linux
+[2026-06-07 10:29:18.580659] [0x00000001fbdf6c40] [warning] cli mode, Current CrealityPrint Version 01.09.03.50
+Function took 0 seconds to execute.
+[2026-06-07 10:29:18.582719] [0x00000001fbdf6c40] [warning] ModelObject::clear_volumes called: object_name=k1_stackable_petg_crate_half_height._1, volumes_to_delete=0, object_id=5
+[2026-06-07 10:29:18.582897] [0x00000001fbdf6c40] [warning] ModelObject::clear_instances called: object_name=k1_stackable_petg_crate_half_height._1, instances_to_delete=0, object_id=5
+[2026-06-07 10:29:18.582913] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 1 objects
+[2026-06-07 10:29:18.582916] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Deleting object name: 'k1_stackable_petg_crate_half_height._1', ID: 5, volumes: 1, instances: 0, layer_config_ranges: 0
+[2026-06-07 10:29:18.582918] [0x00000001fbdf6c40] [warning] ModelObject destructor called: name=k1_stackable_petg_crate_half_height._1, volumes_count=1, instances_count=0, layer_config_ranges_count=0, object_id=5
+[2026-06-07 10:29:18.582919] [0x00000001fbdf6c40] [warning] ModelObject::clear_volumes called: object_name=k1_stackable_petg_crate_half_height._1, volumes_to_delete=1, object_id=5
+[2026-06-07 10:29:18.582921] [0x00000001fbdf6c40] [warning] ModelObject::clear_instances called: object_name=k1_stackable_petg_crate_half_height._1, instances_to_delete=0, object_id=5
+[2026-06-07 10:29:18.583729] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:29:18.583736] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:29:18.583738] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:29:18.585423] [0x00000001fbdf6c40] [warning] no filament colors found in projects
+[2026-06-07 10:29:18.586029] [0x00000001fbdf6c40] [error]   calc_exclude_triangles:Unable to create exclude triangles
+

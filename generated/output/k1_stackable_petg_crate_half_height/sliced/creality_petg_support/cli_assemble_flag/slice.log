@@ -1,0 +1,73 @@
+[2026-06-07 10:32:30.734285] [0x00000001fbdf6c40] [trace]   Initializing StaticPrintConfigs
+[2026-06-07 10:32:30.742770] [0x00000001fbdf6c40] [error]   main start
+[2026-06-07 10:32:30.742793] [0x00000001fbdf6c40] [error]   main check linux
+[2026-06-07 10:32:30.743329] [0x00000001fbdf6c40] [warning] cli mode, Current CrealityPrint Version 01.09.03.50
+[2026-06-07 10:32:30.743336] [0x00000001fbdf6c40] [info]    Will start to read model file now, file count :1
+
+[2026-06-07 10:32:30.743343] [0x00000001fbdf6c40] [info]    allow_multicolor_oneplate 1, allow_rotations 1 skip_modified_gcodes 0 avoid_extrusion_cali_region 0 loaded_filament_ids size 0, clone_objects size 0, skip_useless_pick 0, allow_newer_file 0
+[2026-06-07 10:32:30.743346] [0x00000001fbdf6c40] [info]    plate_to_slice=0, normative_check=1, use_first_fila_as_default=1
+[2026-06-07 10:32:30.743354] [0x00000001fbdf6c40] [info]    read model file:generated/output/k1_stackable_petg_crate_half_height/k1_stackable_petg_crate_half_height.stl
+
+Function took 0 seconds to execute.
+[2026-06-07 10:32:30.747382] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:32:30.747390] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:32:30.747391] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:32:30.747393] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:32:30.747396] [0x00000001fbdf6c40] [info]    object k1_stackable_petg_crate_half_height.stl, id :5, from stl or other 3mf
+
+[2026-06-07 10:32:30.747402] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:32:30.747403] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:32:30.747406] [0x00000001fbdf6c40] [info]    run:before load settings, file count=2
+
+[2026-06-07 10:32:30.747446] [0x00000001fbdf6c40] [info]    operator():load setting file /Users/yannickbowe/Library/Application Support/Creality/Creality Print/7.0/system/Creality/machine/Creality K1 0.4 nozzle.json, with rule 1
+
+[2026-06-07 10:32:30.747995] [0x00000001fbdf6c40] [info]    no substitutions performed from file /Users/yannickbowe/Library/Application Support/Creality/Creality Print/7.0/system/Creality/machine/Creality K1 0.4 nozzle.json
+
+[2026-06-07 10:32:30.748010] [0x00000001fbdf6c40] [info]    loaded machine config /Users/yannickbowe/Library/Application Support/Creality/Creality Print/7.0/system/Creality/machine/Creality K1 0.4 nozzle.json, type Creality K1 0.4 nozzle, name system, inherits Creality K1 0.4 nozzle, printer_model_id 
+[2026-06-07 10:32:30.748022] [0x00000001fbdf6c40] [info]    operator():load setting file generated/output/k1_stackable_petg_crate_half_height/sliced/creality_petg_support/process_petg_support_normal_no_brim.json, with rule 1
+
+[2026-06-07 10:32:30.748508] [0x00000001fbdf6c40] [info]    no substitutions performed from file generated/output/k1_stackable_petg_crate_half_height/sliced/creality_petg_support/process_petg_support_normal_no_brim.json
+
+[2026-06-07 10:32:30.748516] [0x00000001fbdf6c40] [info]    loaded process config generated/output/k1_stackable_petg_crate_half_height/sliced/creality_petg_support/process_petg_support_normal_no_brim.json, type 0.20mm Standard @Creality K1 0.4 nozzle - PETG Support Safe Bounds, name User, inherits 0.20mm Standard @Creality K1 0.4 nozzle
+[2026-06-07 10:32:30.748524] [0x00000001fbdf6c40] [info]    operator():load setting file /Users/yannickbowe/Library/Application Support/Creality/Creality Print/7.0/system/Creality/filament/CR-PETG @Creality K1 0.4 nozzle.json, with rule 1
+
+[2026-06-07 10:32:30.749064] [0x00000001fbdf6c40] [info]    no substitutions performed from file /Users/yannickbowe/Library/Application Support/Creality/Creality Print/7.0/system/Creality/filament/CR-PETG @Creality K1 0.4 nozzle.json
+
+[2026-06-07 10:32:30.749071] [0x00000001fbdf6c40] [info]    loaded default filament config /Users/yannickbowe/Library/Application Support/Creality/Creality Print/7.0/system/Creality/filament/CR-PETG @Creality K1 0.4 nozzle.json, type system, name CR-PETG @Creality K1 0.4 nozzle, inherits 
+[2026-06-07 10:32:30.749076] [0x00000001fbdf6c40] [info]    operator():load setting file /Users/yannickbowe/Library/Application Support/Creality/Creality Print/7.0/system/Creality/filament/CR-PETG @Creality K1 0.4 nozzle.json, with rule 1
+
+[2026-06-07 10:32:30.749215] [0x00000001fbdf6c40] [info]    no substitutions performed from file /Users/yannickbowe/Library/Application Support/Creality/Creality Print/7.0/system/Creality/filament/CR-PETG @Creality K1 0.4 nozzle.json
+
+[2026-06-07 10:32:30.749220] [0x00000001fbdf6c40] [info]    loaded filament 1 from file /Users/yannickbowe/Library/Application Support/Creality/Creality Print/7.0/system/Creality/filament/CR-PETG @Creality K1 0.4 nozzle.json, type system, name CR-PETG @Creality K1 0.4 nozzle, inherits 
+[2026-06-07 10:32:30.749224] [0x00000001fbdf6c40] [info]    current printer , new printer Creality K1 0.4 nozzle, current process , new process 0.20mm Standard @Creality K1 0.4 nozzle - PETG Support Safe Bounds
+[2026-06-07 10:32:30.749227] [0x00000001fbdf6c40] [info]    current printer inherits , new printer inherits Creality K1 0.4 nozzle, current process inherits , new process inherits 0.20mm Standard @Creality K1 0.4 nozzle
+[2026-06-07 10:32:30.749229] [0x00000001fbdf6c40] [info]    index 0, new print compatible printer Creality K1 0.4 nozzle
+[2026-06-07 10:32:30.749232] [0x00000001fbdf6c40] [info]    new printer Creality K1 0.4 nozzle, inherited from Creality K1 0.4 nozzle, new process 0.20mm Standard @Creality K1 0.4 nozzle - PETG Support Safe Bounds, inherited from 0.20mm Standard @Creality K1 0.4 nozzle ,compatible 1
+[2026-06-07 10:32:30.749235] [0x00000001fbdf6c40] [info]    update printer config to newest, different size 0, different_settings: 
+[2026-06-07 10:32:30.749245] [0x00000001fbdf6c40] [info]    update_full_config: config keys count 108
+[2026-06-07 10:32:30.749296] [0x00000001fbdf6c40] [info]    load a new printer, update all the keys, different_settings: 
+[2026-06-07 10:32:30.749299] [0x00000001fbdf6c40] [info]    check printer cli safe params, current_printer_name , new_printer_name Creality K1 0.4 nozzle, printer_model Creality K1
+[2026-06-07 10:32:30.749301] [0x00000001fbdf6c40] [info]    line 2526 , will parse file /Applications/Creality Print.app/Contents/Resources/profiles/BBL/cli_config.json
+[2026-06-07 10:32:30.749695] [0x00000001fbdf6c40] [info]    can not find key Creality K1 in the file
+[2026-06-07 10:32:30.749712] [0x00000001fbdf6c40] [info]    update process config to newest, different size 0, different_settings: 
+[2026-06-07 10:32:30.749721] [0x00000001fbdf6c40] [info]    update_full_config: config keys count 259
+[2026-06-07 10:32:30.749855] [0x00000001fbdf6c40] [info]    load a new process, update all the keys, different_settings: 
+[2026-06-07 10:32:30.749861] [0x00000001fbdf6c40] [info]    update filament 1's config to newest, different size 0, name CR-PETG @Creality K1 0.4 nozzle, different_settings 
+[2026-06-07 10:32:30.749908] [0x00000001fbdf6c40] [info]    skip scalar option inherits from filament 1: CR-PETG @Creality K1 0.4 nozzle
+[2026-06-07 10:32:30.749911] [0x00000001fbdf6c40] [info]    skip scalar option material_flow_temp_graph from filament 1: CR-PETG @Creality K1 0.4 nozzle
+[2026-06-07 10:32:30.749924] [0x00000001fbdf6c40] [warning] no filament colors found in projects
+[2026-06-07 10:32:30.749926] [0x00000001fbdf6c40] [info]    total 1 models, 0 objects
+
+[2026-06-07 10:32:30.750522] [0x00000001fbdf6c40] [info]    translate_old 0, shrink_to_new_bed 0, old bed size {220, 220, 250}
+[2026-06-07 10:32:30.750531] [0x00000001fbdf6c40] [info]    reset_size:before size: plate_width 0, plate_depth 0, plate_height 0
+[2026-06-07 10:32:30.750533] [0x00000001fbdf6c40] [info]    reset_size:after size: plate_width 220, plate_depth 220, plate_height 250
+[2026-06-07 10:32:30.750538] [0x00000001fbdf6c40] [info]    set_pos_and_size: plate_id 0, before, origin {0,0,0}, plate_width 0, plate_depth 0, plate_height 0
+[2026-06-07 10:32:30.750541] [0x00000001fbdf6c40] [info]    set_pos_and_size: with_instance_move 0, after, origin {0,0,0}, plate_width 220, plate_depth 220, plate_height 250
+[2026-06-07 10:32:30.750544] [0x00000001fbdf6c40] [info]    update_slice_result_valid_state: plate 0 , update slice result from 0 to 0
+[2026-06-07 10:32:30.750548] [0x00000001fbdf6c40] [info]    set_pos_and_size: plate_id 1, before, origin {0,0,0}, plate_width 0, plate_depth 0, plate_height 0
+[2026-06-07 10:32:30.750551] [0x00000001fbdf6c40] [info]    set_pos_and_size: with_instance_move 0, after, origin {264,0,0}, plate_width 220, plate_depth 220, plate_height 250
+[2026-06-07 10:32:30.750553] [0x00000001fbdf6c40] [info]    update_slice_result_valid_state: plate 1 , update slice result from 0 to 0
+[2026-06-07 10:32:30.750555] [0x00000001fbdf6c40] [info]    update_slice_result_valid_state: plate 0 , update slice result from 0 to 0
+[2026-06-07 10:32:30.750557] [0x00000001fbdf6c40] [info]    update_slice_result_valid_state: plate 1 , update slice result from 0 to 0
+[2026-06-07 10:32:30.750721] [0x00000001fbdf6c40] [error]   calc_exclude_triangles:Unable to create exclude triangles
+

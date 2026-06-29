@@ -1,0 +1,105 @@
+{
+  "name": "k1_stackable_petg_storage_box",
+  "description": "Largest practical single-piece open storage box for a Creality K1, tuned for black PETG, stack stability, low filament use, side hand holds, and a front label area.",
+  "object_type": "box",
+  "library": "cadquery",
+  "units": "mm",
+  "base_shape": "rectangular",
+  "internal_dimensions": {
+    "length": 201.6,
+    "width": 201.6,
+    "height": 235.6
+  },
+  "wall_thickness": 1.2,
+  "base_thickness": 2.4,
+  "fillet_radius": 0.0,
+  "lid_style": "open_top",
+  "target_printer": {
+    "model": "Creality K1",
+    "build_volume": [
+      220.0,
+      220.0,
+      250.0
+    ],
+    "usable_design_envelope": [
+      216.0,
+      216.0,
+      238.0
+    ]
+  },
+  "material": {
+    "filament": "black PETG",
+    "diameter": 1.75,
+    "density_g_per_cm3": 1.27,
+    "notes": "Use a brim and dry filament for the tall open PETG print."
+  },
+  "dimensions": {
+    "outer_top_width": 216.0,
+    "outer_top_depth": 216.0,
+    "outer_bottom_locator_width": 204.0,
+    "outer_bottom_locator_depth": 204.0,
+    "height": 238.0,
+    "wall_thickness": 1.2,
+    "top_rim_wall_thickness": 3.2,
+    "base_thickness": 2.4,
+    "top_opening_width": 209.6,
+    "top_opening_depth": 209.6,
+    "estimated_internal_volume_liters": 10.1
+  },
+  "stacking": {
+    "type": "tapered bottom locator into reinforced top rim",
+    "bottom_locator_width": 204.0,
+    "top_opening_width": 209.6,
+    "nominal_clearance_per_side": 2.8,
+    "drop_in_depth": 12.0
+  },
+  "features": [
+    {
+      "name": "left_right_hand_holds",
+      "description": "Rounded horizontal side slots with reinforced flat pads around the holes.",
+      "slot_length": 72.0,
+      "slot_height": 24.0,
+      "center_z": 156.0
+    },
+    {
+      "name": "front_label_plaque",
+      "description": "Raised flat front plaque for adhesive labels.",
+      "width": 118.0,
+      "height": 42.0,
+      "center_z": 96.0
+    },
+    {
+      "name": "internal_ribs",
+      "description": "Taper-following vertical ribs and low floor ribs add stiffness without thick solid walls."
+    },
+    {
+      "name": "visibility_hole_lattice",
+      "description": "Repeating diamond holes on all four sides reduce material and make the contents visible while avoiding the label plaque, hand-hold pads, top rim, and base.",
+      "shape": "diamond",
+      "hole_width": 22.0,
+      "hole_height": 28.0
+    }
+  ],
+  "manufacturing": {
+    "print_orientation": "upright, open top up",
+    "supports_allowed": false,
+    "suggested_nozzle": 0.4,
+    "suggested_layer_height": 0.24,
+    "suggested_wall_loops": 3,
+    "suggested_infill_percent": 8,
+    "suggested_bed_adhesion": "At full size, avoid an outside brim unless the slicer keeps it inside the 220 mm bed."
+  },
+  "requirements": [
+    "Fit inside the Creality K1 build envelope with margin.",
+    "Use a stackable interface that does not rely on zero-clearance mating.",
+    "Keep the design single-material and support-free.",
+    "Use thin walls plus ribs rather than a heavy solid shell.",
+    "Use a repeating side-hole pattern to reduce weight and expose the contents.",
+    "Provide hand holds and a visible label location."
+  ],
+  "notes": [
+    "The full box is intentionally close to the K1 envelope; slice preview should still be checked before a long PETG print.",
+    "Top opening is smaller than the maximum top footprint so the next box's bottom locator can sit into the rim.",
+    "Diamond holes are used instead of flat-topped windows to keep the upright print support-free."
+  ]
+}

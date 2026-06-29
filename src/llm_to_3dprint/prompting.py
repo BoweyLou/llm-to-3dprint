@@ -31,6 +31,36 @@ def build_generation_prompt(brief: DesignBrief) -> str:
     note_lines = [f"- {item}" for item in brief.notes] or ["- No extra notes provided."]
     cutout_block = "\n".join(cutout_lines) if cutout_lines else "- No cutouts requested."
     hole_block = "\n".join(hole_lines) if hole_lines else "- No mounting holes requested."
+    design_intent_block = "- No explicit design intent contract provided."
+    if brief.design_intent is not None:
+        design_lines: list[str] = []
+        if brief.design_intent.silhouette is not None:
+            design_lines.append(f"- silhouette: {brief.design_intent.silhouette}")
+        if brief.design_intent.visual_style is not None:
+            design_lines.append(f"- visual style: {brief.design_intent.visual_style}")
+        if brief.design_intent.symmetry is not None:
+            design_lines.append(f"- symmetry: {brief.design_intent.symmetry}")
+        if brief.design_intent.surface_continuity is not None:
+            design_lines.append(
+                f"- surface continuity: {brief.design_intent.surface_continuity}"
+            )
+        if brief.design_intent.must_be_smooth is not None:
+            design_lines.append(f"- must be smooth: {brief.design_intent.must_be_smooth}")
+        if brief.design_intent.max_slope_degrees is not None:
+            design_lines.append(f"- max slope degrees: {brief.design_intent.max_slope_degrees}")
+        if brief.design_intent.min_wall_thickness is not None:
+            design_lines.append(f"- min wall thickness: {brief.design_intent.min_wall_thickness}")
+        if brief.design_intent.cross_sections:
+            design_lines.append(
+                "- cross sections: " + "; ".join(brief.design_intent.cross_sections)
+            )
+        if brief.design_intent.forbidden_features:
+            design_lines.append(
+                "- forbidden features: " + "; ".join(brief.design_intent.forbidden_features)
+            )
+        if brief.design_intent.notes:
+            design_lines.append(f"- design notes: {brief.design_intent.notes}")
+        design_intent_block = "\n".join(design_lines)
     closure_block = "- No explicit closure metadata provided."
     if brief.closure is not None:
         closure_lines = [f"- type: {brief.closure.type}"]
@@ -57,14 +87,51 @@ def build_generation_prompt(brief: DesignBrief) -> str:
         if brief.closure.notes:
             closure_lines.append(f"- closure notes: {brief.closure.notes}")
         closure_block = "\n".join(closure_lines)
+    mesh_block = "- No mesh-preservation metadata provided."
+    if brief.mesh_preservation is not None:
+        mesh_block = "\n".join(
+            [
+                f"- source 3MF: {brief.mesh_preservation.source_3mf}",
+                f"- reuse policy: {brief.mesh_preservation.mesh_reuse_policy}",
+                f"- canonical orientation: {brief.mesh_preservation.canonical_orientation}",
+                f"- canonical Z rotation: {brief.mesh_preservation.canonical_rotate_z_degrees}",
+                (
+                    "- triangle accounting required: "
+                    f"{brief.mesh_preservation.require_triangle_accounting}"
+                ),
+            ]
+        )
+    drawer_block = "- No drawer-stack metadata provided."
+    if brief.drawer_stack is not None:
+        mask_lines = [
+            (
+                f"  - {mask.name}: x={mask.x_min}..{mask.x_max}, "
+                f"y={mask.y_min}..{mask.y_max}, z={mask.z_min}..{mask.z_max}"
+            )
+            for mask in brief.drawer_stack.patch_masks
+        ]
+        drawer_lines = [
+            f"- count: {brief.drawer_stack.drawer_count}",
+            f"- face: {brief.drawer_stack.face}",
+            f"- mode: {brief.drawer_stack.mode}",
+            f"- clearance: {brief.drawer_stack.clearance}",
+            f"- drawer wall thickness: {brief.drawer_stack.drawer_wall_thickness}",
+            f"- body wall thickness: {brief.drawer_stack.body_wall_thickness}",
+            f"- drawer depth: {brief.drawer_stack.drawer_depth}",
+            f"- skin selection strategy: {brief.drawer_stack.skin_selection_strategy}",
+            f"- source skin shell thickness: {brief.drawer_stack.source_skin_shell_thickness}",
+            "- patch masks:",
+            *mask_lines,
+        ]
+        drawer_block = "\n".join(drawer_lines)
 
     extra_generation_rules: list[str] = []
     if brief.closure is not None and brief.closure.type != "open_top":
         extra_generation_rules.extend(
             [
-                "7. Makes print orientation and assembled orientation explicit for the lid/base interface.",
-                "8. Exposes get_lid_seat_height(), LID_SEAT_Z, or BASE_OUTER_HEIGHT and LID_LIP_DEPTH for fit checks.",
-                "9. Avoids putting mating geometry and exterior styling on the wrong side of the lid.",
+                "8. Makes print orientation and assembled orientation explicit for the lid/base interface.",
+                "9. Exposes get_lid_seat_height(), LID_SEAT_Z, or BASE_OUTER_HEIGHT and LID_LIP_DEPTH for fit checks.",
+                "10. Avoids putting mating geometry and exterior styling on the wrong side of the lid.",
             ]
         )
 
@@ -90,6 +157,15 @@ Core dimensions:
 
 Closure:
 {closure_block}
+
+Design intent:
+{design_intent_block}
+
+Mesh preservation:
+{mesh_block}
+
+Drawer stack:
+{drawer_block}
 
 Cutouts:
 {cutout_block}
@@ -117,6 +193,8 @@ Generate a complete Python script that:
 4. Exports both STL and STEP files.
 5. Includes brief comments explaining parameter groups and coordinate assumptions.
 6. Avoids brittle absolute magic numbers.
+7. Treats the design intent as a contract: preserve silhouette, symmetry, smoothness, and forbidden-shape constraints before adding decorative details.
+8. Preserves every source triangle exactly once across output parts when mesh-preservation metadata is present.
 {chr(10).join(extra_generation_rules) if extra_generation_rules else ""}
 
 If geometry is ambiguous, choose conservative printable defaults and state them in code comments.

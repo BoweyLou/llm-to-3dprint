@@ -1,4 +1,4 @@
-"""Modular robot-vac threshold ramp for a 680 mm wide, 30 mm high threshold.
+"""Modular robot-vac threshold ramp for a 680 mm wide, 16.5 mm high threshold.
 
 The design is split into three Bambu A1-printable segments with hidden underside
 connector keys. Units are millimeters.
@@ -11,7 +11,7 @@ Coordinate conventions:
 
 from __future__ import annotations
 
-from math import ceil
+from math import asin, ceil, cos, pi, sin, sqrt
 from pathlib import Path
 
 import cadquery as cq
@@ -23,17 +23,21 @@ OUTPUT_DIR = Path(__file__).resolve().parent / "output"
 
 # User-provided doorway dimensions.
 TOTAL_WIDTH = 680.0
-THRESHOLD_HEIGHT = 30.0
+THRESHOLD_HEIGHT = 16.5
 
 # Bambu A1 build volume is 256 x 256 x 256 mm. Keep practical margins for brim
 # and placement rather than filling the bed edge to edge.
 MAX_SEGMENT_WIDTH = 230.0
 
-# Keep the total front-to-back footprint to 90 mm for tighter door clearances.
+# The full version adds 30 mm to the validated coupon so the approach is less
+# steep while keeping the same top landing against the threshold.
 OVERALL_DEPTH_TARGET = 90.0
-TOP_LANDING_DEPTH = 17.5
+TOP_LANDING_DEPTH = 35.0 / 3.0
 RAMP_RUN_DEPTH = OVERALL_DEPTH_TARGET - TOP_LANDING_DEPTH
 OVERALL_DEPTH = RAMP_RUN_DEPTH + TOP_LANDING_DEPTH
+TEST_SLICE_WIDTH = 20.0
+QUARTER_ROUND_RADIUS = 15.0
+QUARTER_ROUND_SEGMENTS = 12
 
 # Segment layout.
 SEAM_GAP = 0.4
@@ -48,15 +52,15 @@ CONNECTOR_CLEARANCE = 0.35
 CONNECTOR_HALF_POCKET_X = (CONNECTOR_KEY_SPAN_X + SEAM_GAP + CONNECTOR_CLEARANCE) / 2.0
 CONNECTOR_POCKET_DEPTH_Y = CONNECTOR_KEY_DEPTH_Y + CONNECTOR_CLEARANCE
 CONNECTOR_POCKET_Z = CONNECTOR_KEY_THICKNESS + CONNECTOR_CLEARANCE
-CONNECTOR_Y_POSITIONS = (-50.0, -20.0, 5.0)
+CONNECTOR_Y_POSITIONS = (-44.0, -18.0)
 
 # Low ribs give the wheels a tactile transition without making a sharp obstacle.
 TRACTION_RIB_COUNT = 5
 TRACTION_RIB_DEPTH_Y = 2.2
-TRACTION_RIB_HEIGHT = 0.55
+TRACTION_RIB_HEIGHT = 0.4
 TRACTION_RIB_OVERLAP = 0.25
 TRACTION_RIB_EDGE_MARGIN_X = 8.0
-TRACTION_RIB_FIRST_Y = -58.0
+TRACTION_RIB_FIRST_Y = -66.0
 TRACTION_RIB_SPACING_Y = 14.0
 
 
@@ -93,6 +97,15 @@ def build_connector_key() -> cq.Workplane:
     key = key.edges("|Z").chamfer(0.35)
     key = key.faces(">Z").edges().chamfer(0.25)
     return key
+
+
+def build_test_slice(width: float = TEST_SLICE_WIDTH) -> cq.Workplane:
+    """Build a narrow profile coupon for checking height and ramp depth."""
+
+    if width <= 0:
+        raise ValueError("test slice width must be positive")
+    _validate_dimensions()
+    return _build_wedge(width).union(_build_traction_ribs(width))
 
 
 def build_assembly() -> cq.Assembly:
@@ -139,16 +152,7 @@ def export_all() -> None:
 
 
 def _build_wedge(width: float) -> cq.Workplane:
-    front_y = -RAMP_RUN_DEPTH
-    threshold_y = 0.0
-    back_y = TOP_LANDING_DEPTH
-
-    profile_yz = [
-        (front_y, 0.0),
-        (threshold_y, THRESHOLD_HEIGHT),
-        (back_y, THRESHOLD_HEIGHT),
-        (back_y, 0.0),
-    ]
+    profile_yz = _build_profile_yz()
 
     return (
         cq.Workplane("YZ")
@@ -159,8 +163,55 @@ def _build_wedge(width: float) -> cq.Workplane:
     )
 
 
+def _build_profile_yz() -> list[tuple[float, float]]:
+    """Build the ramp side profile with a concave rear quarter-round relief."""
+
+    front_y = -RAMP_RUN_DEPTH
+    threshold_y = 0.0
+    back_y = TOP_LANDING_DEPTH
+    radius = QUARTER_ROUND_RADIUS
+    top_y = _rear_profile_y_at_z(THRESHOLD_HEIGHT)
+
+    profile_yz = [
+        (front_y, 0.0),
+        (threshold_y, THRESHOLD_HEIGHT),
+        (top_y, THRESHOLD_HEIGHT),
+    ]
+
+    start_angle = _quarter_round_angle_for_z(THRESHOLD_HEIGHT)
+    if THRESHOLD_HEIGHT > radius:
+        profile_yz.append((back_y, radius))
+        start_angle = pi / 2.0
+    for step in range(1, QUARTER_ROUND_SEGMENTS + 1):
+        angle = start_angle + ((pi - start_angle) * step / QUARTER_ROUND_SEGMENTS)
+        profile_yz.append((back_y + (radius * cos(angle)), radius * sin(angle)))
+
+    return profile_yz
+
+
+def _quarter_round_angle_for_z(z_pos: float) -> float:
+    radius = QUARTER_ROUND_RADIUS
+    if z_pos >= radius:
+        return pi / 2.0
+    if z_pos <= 0:
+        return pi
+    return pi - asin(z_pos / radius)
+
+
+def _rear_profile_y_at_z(z_pos: float) -> float:
+    radius = QUARTER_ROUND_RADIUS
+    if z_pos <= 0.0:
+        return TOP_LANDING_DEPTH - radius
+    if z_pos >= radius:
+        return TOP_LANDING_DEPTH
+    return TOP_LANDING_DEPTH - sqrt((radius * radius) - (z_pos * z_pos))
+
+
 def _build_traction_ribs(width: float) -> cq.Workplane:
-    rib_length_x = width - (2.0 * TRACTION_RIB_EDGE_MARGIN_X)
+    edge_margin_x = min(TRACTION_RIB_EDGE_MARGIN_X, max(1.0, width * 0.1))
+    rib_length_x = width - (2.0 * edge_margin_x)
+    if rib_length_x <= 0:
+        raise ValueError("traction rib width must be positive")
     ribs: cq.Workplane | None = None
 
     for i in range(TRACTION_RIB_COUNT):
@@ -249,9 +300,19 @@ def _validate_dimensions() -> None:
         raise ValueError("segment width exceeds configured print-bed limit")
     if OVERALL_DEPTH > 245.0:
         raise ValueError("ramp depth is too close to the Bambu A1 bed limit")
+    if QUARTER_ROUND_RADIUS <= 0:
+        raise ValueError("quarter-round radius must be positive")
+    if QUARTER_ROUND_SEGMENTS < 4:
+        raise ValueError("quarter-round relief needs at least four segments")
     for y_pos in CONNECTOR_Y_POSITIONS:
         if _top_surface_z_at_y(y_pos) < CONNECTOR_POCKET_Z + 2.0:
             raise ValueError("connector pocket is too close to the thin front edge")
+        front_pocket_edge_y = y_pos - (CONNECTOR_POCKET_DEPTH_Y / 2.0)
+        if _top_surface_z_at_y(front_pocket_edge_y) < CONNECTOR_POCKET_Z + 0.1:
+            raise ValueError("connector pocket front edge would break through the ramp surface")
+        rear_pocket_edge_y = y_pos + (CONNECTOR_POCKET_DEPTH_Y / 2.0)
+        if rear_pocket_edge_y > _rear_profile_y_at_z(CONNECTOR_POCKET_Z + 0.1):
+            raise ValueError("connector pocket rear edge would break through the quarter-round relief")
 
 
 if __name__ == "__main__":

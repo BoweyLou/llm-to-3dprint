@@ -36,6 +36,12 @@ MCP_PROTOCOL_VERSION = "2025-06-18"
 JSONRPC_VERSION = "2.0"
 SERVER_NAME = "llm-to-3dprint-bambu"
 
+TOOL_ALIASES = {
+    "build_bambu_handoff": "render_bambu_handoff",
+    "write_bambu_cli_assemble_list": "build_bambu_cli_assemble_list",
+    "patch_bambu_3mf": "patch_bambu_studio_3mf",
+}
+
 
 def _project_input_schema() -> dict[str, Any]:
     return {
@@ -261,12 +267,17 @@ def _tool_definitions() -> list[dict[str, Any]]:
 def _server_info() -> dict[str, Any]:
     return {
         "protocolVersion": MCP_PROTOCOL_VERSION,
-        "capabilities": {"tools": {"listChanged": False}},
+        "capabilities": {
+            "tools": {"listChanged": False},
+            "resources": {"listChanged": False},
+            "prompts": {"listChanged": False},
+        },
         "serverInfo": {"name": SERVER_NAME, "version": __version__},
         "instructions": (
             "Use this server to validate BambuProjectSpec files, write assemble-list JSON, "
             "drive Bambu Studio CLI or GUI exports, patch Studio-authored multicolor 3MF projects, "
-            "validate or capture seed templates, or populate a fresh output from a seed Bambu Studio template."
+            "validate or capture seed templates, populate a fresh output from a seed Bambu Studio template, "
+            "or retrieve local workflow resources and prompts for design validation and review."
         ),
     }
 
@@ -311,7 +322,158 @@ def _load_project_spec(arguments: dict[str, Any]) -> BambuProjectSpec:
     raise ValueError("Provide either project or project_path")
 
 
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
+def _resource_definitions() -> list[dict[str, Any]]:
+    return [
+        {
+            "uri": "llm-to-3dprint://docs/backlog",
+            "name": "CAD and printer workflow backlog",
+            "mimeType": "text/markdown",
+            "description": "Repo-local backlog mirror for CAD, Blender, MCP, and governance work.",
+        },
+        {
+            "uri": "llm-to-3dprint://docs/geometry-recipes",
+            "name": "Geometry recipes and shape contracts",
+            "mimeType": "text/markdown",
+            "description": "Local printable-shape recipes and validation expectations.",
+        },
+        {
+            "uri": "llm-to-3dprint://examples/rectangular-brief",
+            "name": "Starter rectangular enclosure brief",
+            "mimeType": "application/json",
+            "description": "Example DesignBrief payload for the local starter renderer.",
+        },
+        {
+            "uri": "llm-to-3dprint://examples/bambu-a1-handoff",
+            "name": "Bambu A1 handoff example",
+            "mimeType": "application/json",
+            "description": "Example BambuProjectSpec payload for printer-facing handoff work.",
+        },
+    ]
+
+
+def _resource_paths() -> dict[str, Path]:
+    root = _repo_root()
+    return {
+        "llm-to-3dprint://docs/backlog": root / "docs" / "backlog.md",
+        "llm-to-3dprint://docs/geometry-recipes": root / "docs" / "geometry-recipes.md",
+        "llm-to-3dprint://examples/rectangular-brief": root / "examples" / "rectangular_enclosure.json",
+        "llm-to-3dprint://examples/bambu-a1-handoff": root / "examples" / "bambu_a1_hybrid_project.json",
+    }
+
+
+def _read_resource(uri: str) -> dict[str, Any]:
+    path = _resource_paths().get(uri)
+    if path is None:
+        raise ValueError(f"Unknown resource URI: {uri}")
+    return {
+        "contents": [
+            {
+                "uri": uri,
+                "mimeType": next(
+                    resource["mimeType"]
+                    for resource in _resource_definitions()
+                    if resource["uri"] == uri
+                ),
+                "text": path.read_text(),
+            }
+        ]
+    }
+
+
+def _prompt_definitions() -> list[dict[str, Any]]:
+    return [
+        {
+            "name": "review_generated_part",
+            "description": "Review a generated CAD, STL, STEP, 3MF, or Blender artifact set before printing.",
+            "arguments": [
+                {"name": "artifact_path", "description": "Path to the generated artifact or review report.", "required": True},
+                {"name": "brief_path", "description": "Optional DesignBrief path for intent checks.", "required": False},
+            ],
+        },
+        {
+            "name": "prepare_bambu_handoff",
+            "description": "Prepare a Bambu Studio handoff review from a project spec and generated artifacts.",
+            "arguments": [
+                {"name": "project_path", "description": "Path to a BambuProjectSpec JSON file.", "required": True},
+            ],
+        },
+        {
+            "name": "validate_design_contract",
+            "description": "Validate a DesignBrief before CAD generation and summarize missing contract fields.",
+            "arguments": [
+                {"name": "brief_path", "description": "Path to a DesignBrief JSON file.", "required": True},
+            ],
+        },
+    ]
+
+
+def _prompt_messages(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+    if name == "review_generated_part":
+        artifact_path = arguments.get("artifact_path", "<artifact-path>")
+        brief_path = arguments.get("brief_path")
+        brief_line = f"\n- Brief: `{brief_path}`" if brief_path else ""
+        return {
+            "description": "Generated part review prompt",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": {
+                        "type": "text",
+                        "text": (
+                            "Review the generated part before printing.\n"
+                            f"- Artifact or report: `{artifact_path}`{brief_line}\n"
+                            "- Check design intent, dimensions, bed fit, geometry health, preview artifacts, and Bambu handoff risks.\n"
+                            "- Return blockers first, then concrete next commands."
+                        ),
+                    },
+                }
+            ],
+        }
+    if name == "prepare_bambu_handoff":
+        project_path = arguments.get("project_path", "<project-path>")
+        return {
+            "description": "Bambu handoff preparation prompt",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": {
+                        "type": "text",
+                        "text": (
+                            "Prepare the Bambu handoff for printing.\n"
+                            f"- Project spec: `{project_path}`\n"
+                            "- Validate the spec, validate referenced artifacts, render the handoff, and note whether final 3MF creation needs Studio GUI, CLI, template patching, or manual review."
+                        ),
+                    },
+                }
+            ],
+        }
+    if name == "validate_design_contract":
+        brief_path = arguments.get("brief_path", "<brief-path>")
+        return {
+            "description": "Design-contract validation prompt",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": {
+                        "type": "text",
+                        "text": (
+                            "Validate this DesignBrief before CAD generation.\n"
+                            f"- Brief: `{brief_path}`\n"
+                            "- Run validate-design, inspect missing silhouette/symmetry/cross-section/forbidden-feature fields, and recommend only contract-level fixes before code generation."
+                        ),
+                    },
+                }
+            ],
+        }
+    raise ValueError(f"Unknown prompt: {name}")
+
+
 def call_mcp_tool(name: str, arguments: dict[str, Any] | None) -> dict[str, Any]:
+    name = TOOL_ALIASES.get(name, name)
     payload = arguments or {}
     try:
         if name == "probe_bambu_studio":
@@ -504,10 +666,31 @@ def handle_mcp_request(request: dict[str, Any]) -> dict[str, Any] | None:
         return _jsonrpc_result(request_id, call_mcp_tool(name, arguments))
 
     if method == "resources/list":
-        return _jsonrpc_result(request_id, {"resources": []})
+        return _jsonrpc_result(request_id, {"resources": _resource_definitions()})
+
+    if method == "resources/read":
+        uri = params.get("uri")
+        if not isinstance(uri, str) or not uri:
+            return _jsonrpc_error(request_id, -32602, "resources/read requires a resource URI")
+        try:
+            return _jsonrpc_result(request_id, _read_resource(uri))
+        except Exception as exc:
+            return _jsonrpc_error(request_id, -32602, str(exc))
 
     if method == "prompts/list":
-        return _jsonrpc_result(request_id, {"prompts": []})
+        return _jsonrpc_result(request_id, {"prompts": _prompt_definitions()})
+
+    if method == "prompts/get":
+        name = params.get("name")
+        arguments = params.get("arguments") or {}
+        if not isinstance(name, str) or not name:
+            return _jsonrpc_error(request_id, -32602, "prompts/get requires a prompt name")
+        if not isinstance(arguments, dict):
+            return _jsonrpc_error(request_id, -32602, "prompts/get arguments must be an object")
+        try:
+            return _jsonrpc_result(request_id, _prompt_messages(name, arguments))
+        except Exception as exc:
+            return _jsonrpc_error(request_id, -32602, str(exc))
 
     return _jsonrpc_error(request_id, -32601, f"Method not found: {method}")
 

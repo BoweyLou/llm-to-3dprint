@@ -24,6 +24,22 @@
     "decorate_exterior_only": true,
     "notes": "Keep the exterior styling on the opposite side of the mating lip."
   },
+  "design_intent": {
+    "silhouette": "two clean rectangular enclosure parts with a visible but intentional lid interface",
+    "visual_style": "simple functional housing suitable for later cosmetic refinement",
+    "symmetry": "xy",
+    "surface_continuity": "mating lip and exterior face must stay on their intended sides",
+    "must_be_smooth": true,
+    "min_wall_thickness": 2.4,
+    "forbidden_features": [
+      "mating geometry on the decorative face",
+      "decorative styling that changes the lid clearance"
+    ],
+    "cross_sections": [
+      "lid cross section should show lip-down assembled orientation",
+      "base cross section should expose a stable seat for the lid"
+    ]
+  },
   "requirements": [
     "Preserve the internal fit while allowing the exterior shell to be restyled.",
     "Make the closure geometry explicit enough for automated fit checks."

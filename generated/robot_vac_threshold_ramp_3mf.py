@@ -191,7 +191,12 @@ def build_plate_files() -> list[Path]:
         write_3mf(plate_1, [PlacedMesh("ramp_segment_1", segment_paths[0])])
         write_3mf(plate_2, [PlacedMesh("ramp_segment_2", segment_paths[1])])
 
-        key_x_positions = (-95.0, -57.0, -19.0, 19.0, 57.0, 95.0)
+        key_count = (ramp.SEGMENT_COUNT - 1) * len(ramp.CONNECTOR_Y_POSITIONS)
+        key_spacing = ramp.CONNECTOR_KEY_SPAN_X + 10.0
+        key_x_positions = [
+            (index - ((key_count - 1) / 2.0)) * key_spacing
+            for index in range(key_count)
+        ]
         plate_3_placements = [PlacedMesh("ramp_segment_3", segment_paths[2])]
         plate_3_placements.extend(
             PlacedMesh(f"connector_key_{index}", connector, x=x_pos, y=75.0)

@@ -1,7 +1,7 @@
 {
   "name": "robot_vac_threshold_ramp",
   "units": "mm",
-  "purpose": "Modular one-sided threshold ramp for robot vacuums crossing a 680 mm wide, 30 mm high doorway threshold.",
+  "purpose": "Modular one-sided threshold ramp for robot vacuums crossing a 680 mm wide, 16.5 mm high doorway threshold.",
   "target_printer": {
     "model": "Bambu Lab A1",
     "build_volume": [256, 256, 256],
@@ -9,23 +9,49 @@
   },
   "dimensions": {
     "total_width": 680,
-    "threshold_height": 30,
-    "ramp_run_depth": 72.5,
-    "top_landing_depth": 17.5,
+    "threshold_height": 16.5,
+    "ramp_run_depth": 78.333,
+    "top_landing_depth": 11.667,
+    "quarter_round_relief_radius": 15,
+    "rear_reinforced_zone_depth": 29.667,
+    "overall_depth": 90,
+    "traction_line_height": 0.4,
     "segment_count": 3,
-    "nominal_segment_width": 226.4
+    "nominal_segment_width": 226.667,
+    "straight_seam_clearance": 0.35,
+    "rounded_key_depth": 3.2,
+    "rounded_key_centers_y": [-58, -31],
+    "seam_rail_width": 18,
+    "side_entry_curve_inset": 42,
+    "side_entry_slope_width": 48,
+    "side_entry_feather_edge_height": 0.33,
+    "side_entry_fade_start_y": -25,
+    "protected_rear_fit_zone_y": -13,
+    "underside_relief_shell_thickness": 3.2,
+    "underside_relief_peak_y": -24,
+    "underside_relief_peak_z": 8
   },
   "features": [
     "three printable ramp segments",
-    "compact one-sided 1:2.4 slope",
-    "hidden underside connector keys across each seam",
-    "shallow top traction ribs",
+    "longer one-sided 1:4.7 slope after test fitting",
+    "concave 15 mm quarter-round relief at the tall end",
+    "1.5 mm reinforced riser above the quarter-round relief",
+    "lower shallow raised wavy traction lines on the sloped top face",
+    "solid exterior rails around the clean full-width print plates",
+    "straight seams with two shallow rounded alignment keys per join",
+    "0.35 mm clearance across keyed seams",
+    "conservative underside center relief to save filament while keeping edges and rear contact solid",
+    "curved side-entry footprint on the far left and far right ends",
+    "clean lateral side-entry ramps on the outer ends that feather down near floor height",
+    "side-entry ramps fade out before the high rear quarter-round fit zone",
+    "symmetric shallow raised wave traction lines",
     "flat bottom for tape or friction placement"
   ],
   "assumptions": [
     "single-sided ramp from floor up to threshold",
     "PETG preferred; PLA acceptable for indoor proof-of-fit",
-    "segments are held together by underside keys, not brittle snap clips",
-    "final doorway fit may need tuning after measuring available floor depth"
+    "visible sinusoidal jigsaw seams were removed because they created odd geometry in Bambu Studio",
+    "the v4 join strategy uses shallow clean alignment keys instead of wavy jigsaw edges",
+    "full-width plates should be printed as three separate Bambu A1 jobs or plates"
   ]
 }

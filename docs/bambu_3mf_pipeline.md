@@ -59,7 +59,9 @@ The CLI now exposes:
 
 - `init-bambu-project`
 - `validate-bambu-project`
+- `validate-artifacts`
 - `bambu-handoff`
+- `blender-review`
 - `bambu-probe`
 - `bambu-setup-hammerspoon`
 - `bambu-build-cli`
@@ -84,6 +86,11 @@ The MCP server exposes the same stable workflow as tools:
 - `apply_bambu_seed_template`
 - `check_bambu_seed_template`
 - `capture_bambu_seed_template`
+
+It also exposes local resources and prompts for the surrounding agent workflow:
+
+- resources for the backlog, geometry recipes, starter brief, and Bambu handoff example
+- prompts for reviewing a generated part, preparing a Bambu handoff, and validating a design contract
 
 ## Current Runtime Limits
 
@@ -121,6 +128,7 @@ The current implementation keeps the MCP surface thin and file-driven on purpose
 
 - load a validated `BambuProjectSpec` from disk
 - call the stable export or patch path
+- expose repo-owned reference resources and prompt scaffolds without mutating files
 - return structured results directly from the underlying dataclasses
 
 The recommended production path is now template-backed:

@@ -121,12 +121,16 @@ def test_tools_list_contains_expected_names() -> None:
     names = [tool["name"] for tool in response["result"]["tools"]]
     assert names == [
         "probe_bambu_studio",
+        "setup_bambu_hammerspoon",
         "validate_bambu_project",
-        "build_bambu_handoff",
-        "write_bambu_cli_assemble_list",
+        "render_bambu_handoff",
+        "build_bambu_cli_assemble_list",
         "export_bambu_3mf_cli",
         "export_bambu_3mf_gui",
-        "patch_bambu_3mf",
+        "patch_bambu_studio_3mf",
+        "apply_bambu_seed_template",
+        "check_bambu_seed_template",
+        "capture_bambu_seed_template",
     ]
 
 
@@ -151,7 +155,7 @@ def test_patch_tool_accepts_project_path(tmp_path: Path) -> None:
     output_3mf = tmp_path / "patched.3mf"
 
     result = call_mcp_tool(
-        "patch_bambu_3mf",
+        "patch_bambu_studio_3mf",
         {
             "project_path": str(project_path),
             "input_3mf": str(input_3mf),
@@ -161,6 +165,28 @@ def test_patch_tool_accepts_project_path(tmp_path: Path) -> None:
 
     assert result["isError"] is False
     assert result["structuredContent"]["output_exists"] is True
+    assert output_3mf.exists()
+
+
+def test_legacy_patch_tool_alias_still_works(tmp_path: Path) -> None:
+    for name in ("lid_shell.stl", "lid_inserts.stl"):
+        (tmp_path / name).write_text("solid test\nendsolid test\n")
+
+    project_path = tmp_path / "project.json"
+    project_path.write_text(json.dumps(make_project_payload(tmp_path), indent=2) + "\n")
+    input_3mf = write_studio_3mf_fixture(tmp_path / "input.3mf")
+    output_3mf = tmp_path / "patched.3mf"
+
+    result = call_mcp_tool(
+        "patch_bambu_3mf",
+        {
+            "project_path": str(project_path),
+            "input_3mf": str(input_3mf),
+            "output_3mf": str(output_3mf),
+        },
+    )
+
+    assert result["isError"] is False
     assert output_3mf.exists()
 
 
@@ -206,3 +232,48 @@ def test_export_gui_tool_passes_merge_click_overrides(tmp_path: Path, monkeypatc
     assert captured["merge_click"] == (100, 200)
     assert captured["import_timeout"] == 12.0
     assert captured["save_timeout"] == 34.0
+
+
+def test_mcp_resources_and_prompts_are_exposed() -> None:
+    resources = handle_mcp_request({"jsonrpc": "2.0", "id": 3, "method": "resources/list"})
+    prompts = handle_mcp_request({"jsonrpc": "2.0", "id": 4, "method": "prompts/list"})
+
+    assert resources is not None
+    assert "llm-to-3dprint://docs/backlog" in [
+        resource["uri"] for resource in resources["result"]["resources"]
+    ]
+    assert prompts is not None
+    assert "review_generated_part" in [prompt["name"] for prompt in prompts["result"]["prompts"]]
+
+
+def test_mcp_resource_read_returns_backlog_text() -> None:
+    response = handle_mcp_request(
+        {
+            "jsonrpc": "2.0",
+            "id": 5,
+            "method": "resources/read",
+            "params": {"uri": "llm-to-3dprint://docs/backlog"},
+        }
+    )
+
+    assert response is not None
+    assert "Backlog" in response["result"]["contents"][0]["text"]
+
+
+def test_mcp_prompt_get_returns_review_prompt() -> None:
+    response = handle_mcp_request(
+        {
+            "jsonrpc": "2.0",
+            "id": 6,
+            "method": "prompts/get",
+            "params": {
+                "name": "review_generated_part",
+                "arguments": {"artifact_path": "generated/output/part.stl"},
+            },
+        }
+    )
+
+    assert response is not None
+    text = response["result"]["messages"][0]["content"]["text"]
+    assert "generated/output/part.stl" in text
+    assert "bed fit" in text

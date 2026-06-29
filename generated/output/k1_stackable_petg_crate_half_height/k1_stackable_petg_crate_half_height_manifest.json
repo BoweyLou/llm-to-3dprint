@@ -1,0 +1,72 @@
+{
+  "part_name": "k1_stackable_petg_crate_half_height",
+  "target_printer": "Creality K1",
+  "target_build_volume_mm": [
+    220.0,
+    220.0,
+    250.0
+  ],
+  "material": "black PETG",
+  "design_intent": "near-full-plate, half-height stackable crate with denser diamond cutouts",
+  "outputs": {
+    "box_stl": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_crate_half_height/k1_stackable_petg_crate_half_height.stl",
+    "box_step": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_crate_half_height/k1_stackable_petg_crate_half_height.step",
+    "stack_interface_coupon_stl": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_crate_half_height/k1_stackable_petg_crate_half_height_stack_interface_coupon.stl",
+    "stack_interface_coupon_step": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_crate_half_height/k1_stackable_petg_crate_half_height_stack_interface_coupon.step"
+  },
+  "box_bounds_mm": {
+    "min_x": -108.0,
+    "max_x": 108.0,
+    "min_y": -108.0,
+    "max_y": 108.0,
+    "min_z": 0.0,
+    "max_z": 120.0,
+    "size": [
+      216.0,
+      216.0,
+      120.0
+    ]
+  },
+  "coupon_bounds_mm": {
+    "min_x": -100.0,
+    "max_x": 94.0,
+    "min_y": -42.0,
+    "max_y": 42.0,
+    "min_z": 0.0,
+    "max_z": 22.0,
+    "size": [
+      194.0,
+      84.0,
+      22.0
+    ]
+  },
+  "stacking": {
+    "bottom_locator_mm": 204.0,
+    "top_opening_mm": 209.6,
+    "clearance_per_side_mm": 2.799999999999997,
+    "locator_drop_depth_mm": 12.0
+  },
+  "features": {
+    "hand_slot_length_mm": 66.0,
+    "hand_slot_height_mm": 22.0,
+    "hand_slot_center_z_mm": 72.0,
+    "label_plaque_width_mm": 112.0,
+    "label_plaque_height_mm": 30.0,
+    "label_center_z_mm": 54.0,
+    "visibility_hole_shape": "dense support-friendly diamonds",
+    "visibility_hole_width_mm": 17.0,
+    "visibility_hole_height_mm": 16.0,
+    "front_back_visibility_hole_count": 35,
+    "side_visibility_hole_count": 35
+  },
+  "estimated_solid_model_volume_cm3": 346.86,
+  "estimated_petg_mass_from_cad_g": 440.5,
+  "print_notes": [
+    "Print upright with the open top up.",
+    "Supports should be off; all designed overhangs are shallow or vertical cuts.",
+    "Dense diamond visibility holes are kept out of the label plaque, hand pads, rim, and base.",
+    "At full size, avoid an outside brim unless your slicer keeps it inside the 220 mm bed.",
+    "Suggested starting point: 0.24 mm layers, 3 wall loops, 8-10% gyroid or cubic infill.",
+    "The crate keeps the tall box stack interface, so the existing quarter validation print is still a useful stack-clearance reference."
+  ]
+}

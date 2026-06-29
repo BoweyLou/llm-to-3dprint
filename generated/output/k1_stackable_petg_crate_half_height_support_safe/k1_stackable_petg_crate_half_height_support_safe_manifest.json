@@ -1,0 +1,20 @@
+{
+  "part_name": "k1_stackable_petg_crate_half_height_support_safe",
+  "source_stl": "generated/output/k1_stackable_petg_crate_half_height/k1_stackable_petg_crate_half_height.stl",
+  "output_stl": "generated/output/k1_stackable_petg_crate_half_height_support_safe/k1_stackable_petg_crate_half_height_support_safe.stl",
+  "xy_scale_factor": 0.9837962962962963,
+  "bounds_mm": {
+    "min_x": -106.25,
+    "max_x": 106.25,
+    "min_y": -106.25,
+    "max_y": 106.25,
+    "min_z": 0.0,
+    "max_z": 120.0,
+    "size": [
+      212.5,
+      212.5,
+      120.0
+    ]
+  },
+  "reason": "Support-generated toolpaths for the 216 mm model exceeded the 220 mm K1 bed; this variant preserves the crate design while leaving support margin."
+}

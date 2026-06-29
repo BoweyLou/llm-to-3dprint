@@ -1,0 +1,98 @@
+{
+  "name": "portable_display_portrait_stand",
+  "description": "Multi-part PETG portrait stand for a bare portable display on a kitchen bench, with a continuous low front fascia that hides cables and keeps a right-half bottom port keepout clear.",
+  "object_type": "stand",
+  "library": "cadquery",
+  "units": "mm",
+  "base_shape": "multi_part_flared_cradle",
+  "internal_dimensions": {
+    "length": 150.0,
+    "width": 250.0,
+    "height": 120.0
+  },
+  "wall_thickness": 3.0,
+  "base_thickness": 8.0,
+  "fillet_radius": 6.0,
+  "lid_style": "open_top",
+  "design_intent": {
+    "silhouette": "two rounded cradle feet hidden behind a single continuous low angled front fascia/skirt, with a subtle dress-like flare at the bench and a low rear bridge rail",
+    "visual_style": "soft functional kitchen-bench accessory, rounded and stable without looking like a square bracket",
+    "symmetry": "none",
+    "surface_continuity": "single uninterrupted low front skirt, rounded flared plinths behind it, clean angled support faces, and intentional rear cable-channel interruptions only on the port side",
+    "must_be_smooth": true,
+    "min_wall_thickness": 3.0,
+    "forbidden_features": [
+      "geometry crossing the right-half bottom port keepout",
+      "a split or visually interrupted front skirt",
+      "a tall front lip covering the display face",
+      "sharp bench-contact corners",
+      "unsupported overhang-heavy hooks",
+      "single monolithic part exceeding the Creality K1 bed"
+    ],
+    "cross_sections": [
+      "side section through either foot shows a 15 degree rear-tilted screen pocket lifted to 32 mm so plug bodies and cable bends clear the bench, with no horizontal flat seat pad in front of the backrest",
+      "bottom section through the right half keeps the port edge open and routes cables behind the fascia through a widened local rear-facing 75 mm through-channel with a taller plug bay",
+      "plan view shows each printed part inside a 220 x 220 mm Creality K1 bed envelope"
+    ],
+    "notes": "The generated script owns the exact stand geometry; this brief records the physical contract and manufacturing intent."
+  },
+    "requirements": [
+    "Hold a bare display in portrait orientation at a 15 degree backward tilt.",
+    "Use a 12.5 mm padded slot for an 11 mm monitor body plus felt or tape, formed by the lifted front fascia and the angled rear backrest rather than a horizontal shelf.",
+    "Use double-sided tape against the rear backrest as the primary screen retention so the front fascia can stay low and angled.",
+    "Keep the right-half bottom edge open for ports and route cables rearward behind the fascia through a local port-side tunnel/slot with at least 75 mm of turn depth and 28 mm plug-body clearance.",
+    "Extend side-capture fins down to the bench plane so the feet do not contain slicer-visible floating regions.",
+    "Add small retrofit skirt spacers that sit on top of the already-printed feet, connect the skirt to the body with tape or adhesive, and carry the monitor short edge at the 32 mm cable-clearance height.",
+    "Split the stand into K1-printable PETG parts: left foot, right cable foot, rear bridge, continuous front fascia/skirt, retrofit skirt spacers, and fit coupon.",
+    "Export the continuous front fascia/skirt in diagonal print orientation so it fits the 220 x 220 mm Creality K1 bed.",
+    "Include a small fit coupon before printing the full assembly."
+  ],
+  "cutouts": [],
+  "mounting_holes": [],
+  "stand_parameters": {
+    "monitor_width": 250.0,
+    "monitor_height": 355.0,
+    "monitor_thickness": 11.0,
+    "screen_tilt_degrees": 15.0,
+    "slot_width": 12.5,
+    "monitor_bottom_height": 32.0,
+    "plug_body_clearance_height": 28.0,
+    "right_foot_cable_channel_width": 78.0,
+    "right_foot_cable_channel_world_x_span": [
+      24.0,
+      102.0
+    ],
+    "retrofit_spacer_height": 24.0,
+    "retrofit_spacer_assembled_top_height": 32.0,
+    "retrofit_spacer_top_depth": 13.9,
+    "right_retrofit_spacer_world_x_span": [
+      106.0,
+      134.0
+    ],
+    "cable_turn_depth": 75.0,
+    "port_keepout": "right_half_bottom",
+    "target_printer": "Creality K1",
+    "target_bed_xy": 220.0,
+    "material": "PETG",
+    "assembly_hardware": "M3 screws with heat-set inserts"
+  },
+  "front_fascia_parameters": {
+    "assembled_width": 262.0,
+    "top_width": 254.0,
+    "depth": 40.6,
+    "front_height": 7.0,
+    "rear_height": 32.0,
+    "print_rotation_degrees": 45.0,
+    "rear_cable_pocket_width": 142.0,
+    "rear_cable_pocket_world_x_span": [
+      -23.0,
+      119.0
+    ],
+    "rear_cable_pocket_depth": 32.0,
+    "purpose": "single continuous lifted angled skirt that hides the cable drop from the front while its rear/top edge aligns with the tilted display bottom"
+  },
+  "notes": [
+    "No public API, CLI, schema, or workflow change is intended.",
+    "No docs needed: one-off generated model and handoff, no repo workflow/API change."
+  ]
+}

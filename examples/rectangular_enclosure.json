@@ -14,6 +14,21 @@
   "base_thickness": 2.5,
   "fillet_radius": 2.0,
   "lid_style": "open_top",
+  "design_intent": {
+    "silhouette": "simple rectangular utility enclosure with softened vertical edges",
+    "visual_style": "plain functional electronics housing",
+    "symmetry": "xy",
+    "surface_continuity": "flat walls with only intentional cutouts and edge fillets",
+    "must_be_smooth": true,
+    "min_wall_thickness": 2.0,
+    "forbidden_features": [
+      "random exterior bumps",
+      "decorative ribs that intrude into the internal footprint"
+    ],
+    "cross_sections": [
+      "X and Y centerline sections should show a rectangular shell with a flat base"
+    ]
+  },
   "requirements": [
     "Keep the interior footprint clear for a PCB and wiring.",
     "Avoid overhangs that require support in a standard FDM print orientation.",
@@ -79,4 +94,3 @@
     "This preset is deliberately simple and meant as a starting point."
   ]
 }
-

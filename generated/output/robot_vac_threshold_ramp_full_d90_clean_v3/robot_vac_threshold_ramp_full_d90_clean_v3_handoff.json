@@ -1,0 +1,90 @@
+{
+  "name": "robot_vac_threshold_ramp_full_d90_clean_v3",
+  "units": "mm",
+  "target_printer": "Bambu Lab A1",
+  "print_intent": "three single-material plate files",
+  "slope_ratio": 4.75,
+  "assembly": {
+    "order": [
+      "left",
+      "middle",
+      "right"
+    ],
+    "straight_seam_clearance": 0.35,
+    "side_entry_curve_inset": 42.0,
+    "side_entry_slope_width": 48.0,
+    "side_entry_edge_height": 0.33,
+    "notes": "Visible jigsaw waves were removed; this clean version uses straight seams, solid exterior surfaces, and symmetric traction waves."
+  },
+  "plates": [
+    {
+      "label": "left",
+      "stl": "robot_vac_threshold_ramp_full_d90_clean_v3_plate_1_left.stl",
+      "3mf": "robot_vac_threshold_ramp_full_d90_clean_v3_plate_1_left.3mf",
+      "triangles": 3346,
+      "bounds": {
+        "min": [
+          -113.246,
+          -45.0,
+          0.0
+        ],
+        "max": [
+          113.246,
+          45.0,
+          16.5
+        ],
+        "size": [
+          226.492,
+          90.0,
+          16.5
+        ]
+      }
+    },
+    {
+      "label": "middle",
+      "stl": "robot_vac_threshold_ramp_full_d90_clean_v3_plate_2_middle.stl",
+      "3mf": "robot_vac_threshold_ramp_full_d90_clean_v3_plate_2_middle.3mf",
+      "triangles": 3076,
+      "bounds": {
+        "min": [
+          -113.158,
+          -45.0,
+          0.0
+        ],
+        "max": [
+          113.158,
+          45.0,
+          16.5
+        ],
+        "size": [
+          226.317,
+          90.0,
+          16.5
+        ]
+      }
+    },
+    {
+      "label": "right",
+      "stl": "robot_vac_threshold_ramp_full_d90_clean_v3_plate_3_right.stl",
+      "3mf": "robot_vac_threshold_ramp_full_d90_clean_v3_plate_3_right.3mf",
+      "triangles": 3346,
+      "bounds": {
+        "min": [
+          -113.246,
+          -45.0,
+          0.0
+        ],
+        "max": [
+          113.246,
+          45.0,
+          16.5
+        ],
+        "size": [
+          226.492,
+          90.0,
+          16.5
+        ]
+      }
+    }
+  ]
+}

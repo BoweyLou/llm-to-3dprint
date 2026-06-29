@@ -1,0 +1,12 @@
+{
+    "base_id": "GP004",
+    "enable_support": "1",
+    "from": "User",
+    "inherits": "0.20mm Standard @Creality K1 0.4 nozzle",
+    "is_custom_defined": "0",
+    "name": "0.20mm Standard @Creality K1 0.4 nozzle - Copy(1)",
+    "print_settings_id": "0.20mm Standard @Creality K1 0.4 nozzle - Copy(1)",
+    "support_top_z_distance": "0.275",
+    "support_type": "tree(auto)",
+    "version": "26.3.30.17"
+}

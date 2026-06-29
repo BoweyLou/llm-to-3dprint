@@ -5,9 +5,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-SUPPORTED_LIBRARIES = {"cadquery", "build123d"}
+SUPPORTED_LIBRARIES = {"cadquery", "build123d", "mesh"}
 SUPPORTED_FACES = {"front", "back", "left", "right", "top", "bottom"}
 SUPPORTED_SHAPES = {"rectangular", "circular"}
+SUPPORTED_SYMMETRY = {"none", "x", "y", "xy", "radial"}
+SUPPORTED_MESH_REUSE_POLICIES = {"partition_visible_mesh"}
+SUPPORTED_DRAWER_MODES = {"separate_removable_trays"}
+SUPPORTED_SKIN_SELECTION_STRATEGIES = {"front_visible_grid", "front_visible_raycast"}
 
 
 @dataclass(slots=True)
@@ -112,6 +116,173 @@ class Closure:
 
 
 @dataclass(slots=True)
+class DesignIntent:
+    silhouette: str | None = None
+    visual_style: str | None = None
+    symmetry: str | None = None
+    surface_continuity: str | None = None
+    must_be_smooth: bool | None = None
+    max_slope_degrees: float | None = None
+    min_wall_thickness: float | None = None
+    forbidden_features: list[str] = field(default_factory=list)
+    cross_sections: list[str] = field(default_factory=list)
+    notes: str = ""
+
+    def validate(self) -> None:
+        for label, value in (
+            ("silhouette", self.silhouette),
+            ("visual_style", self.visual_style),
+            ("surface_continuity", self.surface_continuity),
+        ):
+            if value is not None and not value:
+                raise ValueError(f"design_intent.{label} must not be empty when provided")
+        if self.symmetry is not None and self.symmetry not in SUPPORTED_SYMMETRY:
+            raise ValueError(
+                f"design_intent.symmetry must be one of {sorted(SUPPORTED_SYMMETRY)}, got {self.symmetry!r}"
+            )
+        if self.max_slope_degrees is not None and not (0 < self.max_slope_degrees <= 90):
+            raise ValueError(
+                f"design_intent.max_slope_degrees must be > 0 and <= 90, got {self.max_slope_degrees!r}"
+            )
+        if self.min_wall_thickness is not None and self.min_wall_thickness <= 0:
+            raise ValueError(
+                f"design_intent.min_wall_thickness must be > 0, got {self.min_wall_thickness!r}"
+            )
+        for feature in self.forbidden_features:
+            if not feature:
+                raise ValueError("design_intent.forbidden_features must not contain empty items")
+        for section in self.cross_sections:
+            if not section:
+                raise ValueError("design_intent.cross_sections must not contain empty items")
+
+
+@dataclass(slots=True)
+class DrawerPatchMask:
+    name: str
+    x_min: float
+    x_max: float
+    y_min: float
+    y_max: float
+    z_min: float
+    z_max: float
+    notes: str = ""
+
+    def validate(self) -> None:
+        if not self.name:
+            raise ValueError("drawer patch mask name must not be empty")
+        for low_label, high_label, low, high in (
+            ("x_min", "x_max", self.x_min, self.x_max),
+            ("y_min", "y_max", self.y_min, self.y_max),
+            ("z_min", "z_max", self.z_min, self.z_max),
+        ):
+            if low >= high:
+                raise ValueError(f"drawer patch mask {self.name!r} requires {low_label} < {high_label}")
+
+
+@dataclass(slots=True)
+class DrawerStack:
+    drawer_count: int
+    face: str = "front"
+    mode: str = "separate_removable_trays"
+    clearance: float = 0.5
+    min_clearance: float = 0.4
+    max_clearance: float = 0.6
+    drawer_wall_thickness: float = 1.4
+    body_wall_thickness: float = 2.2
+    drawer_depth: float = 30.0
+    front_lip_depth: float = 2.0
+    front_visibility_depth: float = 2.2
+    local_visibility_depth: float = 1.4
+    visibility_grid: float = 0.35
+    skin_selection_strategy: str = "front_visible_raycast"
+    front_normal_min_y: float = 0.25
+    min_patch_component_triangles: int = 20
+    front_backing_offset: float = 0.8
+    source_skin_shell_thickness: float = 0.8
+    front_patch_includes: list[str] = field(default_factory=list)
+    patch_masks: list[DrawerPatchMask] = field(default_factory=list)
+    notes: str = ""
+
+    def validate(self) -> None:
+        if self.drawer_count <= 0:
+            raise ValueError(f"drawer_stack.drawer_count must be > 0, got {self.drawer_count!r}")
+        if self.face not in SUPPORTED_FACES:
+            raise ValueError(f"drawer_stack.face must be one of {sorted(SUPPORTED_FACES)}, got {self.face!r}")
+        if self.mode not in SUPPORTED_DRAWER_MODES:
+            raise ValueError(
+                f"drawer_stack.mode must be one of {sorted(SUPPORTED_DRAWER_MODES)}, got {self.mode!r}"
+            )
+        if self.clearance <= 0:
+            raise ValueError(f"drawer_stack.clearance must be > 0, got {self.clearance!r}")
+        if self.min_clearance <= 0 or self.max_clearance <= 0:
+            raise ValueError("drawer_stack clearance bounds must be > 0")
+        if self.min_clearance > self.max_clearance:
+            raise ValueError("drawer_stack.min_clearance must not exceed max_clearance")
+        if not (self.min_clearance <= self.clearance <= self.max_clearance):
+            raise ValueError(
+                "drawer_stack.clearance must stay within "
+                f"{self.min_clearance:g}..{self.max_clearance:g}"
+            )
+        if self.drawer_wall_thickness <= 0:
+            raise ValueError("drawer_stack.drawer_wall_thickness must be > 0")
+        if self.body_wall_thickness <= 0:
+            raise ValueError("drawer_stack.body_wall_thickness must be > 0")
+        if self.drawer_depth <= 0:
+            raise ValueError("drawer_stack.drawer_depth must be > 0")
+        if self.front_lip_depth <= 0:
+            raise ValueError("drawer_stack.front_lip_depth must be > 0")
+        if self.front_visibility_depth <= 0:
+            raise ValueError("drawer_stack.front_visibility_depth must be > 0")
+        if self.local_visibility_depth <= 0:
+            raise ValueError("drawer_stack.local_visibility_depth must be > 0")
+        if self.visibility_grid <= 0:
+            raise ValueError("drawer_stack.visibility_grid must be > 0")
+        if self.skin_selection_strategy not in SUPPORTED_SKIN_SELECTION_STRATEGIES:
+            raise ValueError(
+                "drawer_stack.skin_selection_strategy must be one of "
+                f"{sorted(SUPPORTED_SKIN_SELECTION_STRATEGIES)}, got {self.skin_selection_strategy!r}"
+            )
+        if not -1 <= self.front_normal_min_y <= 1:
+            raise ValueError("drawer_stack.front_normal_min_y must stay within -1..1")
+        if self.min_patch_component_triangles < 0:
+            raise ValueError("drawer_stack.min_patch_component_triangles must be >= 0")
+        if self.front_backing_offset <= 0:
+            raise ValueError("drawer_stack.front_backing_offset must be > 0")
+        if self.source_skin_shell_thickness <= 0:
+            raise ValueError("drawer_stack.source_skin_shell_thickness must be > 0")
+        if len(self.patch_masks) != self.drawer_count:
+            raise ValueError("drawer_stack.patch_masks must define exactly one mask per drawer")
+        seen: set[str] = set()
+        for mask in self.patch_masks:
+            mask.validate()
+            if mask.name in seen:
+                raise ValueError(f"drawer_stack.patch_masks contains duplicate name {mask.name!r}")
+            seen.add(mask.name)
+
+
+@dataclass(slots=True)
+class MeshPreservation:
+    source_3mf: str
+    mesh_reuse_policy: str
+    canonical_orientation: str = "front_rotated_180"
+    canonical_rotate_z_degrees: float = 180.0
+    source_model_member: str | None = None
+    require_triangle_accounting: bool = True
+    notes: str = ""
+
+    def validate(self) -> None:
+        if not self.source_3mf:
+            raise ValueError("mesh_preservation.source_3mf must not be empty")
+        if self.mesh_reuse_policy not in SUPPORTED_MESH_REUSE_POLICIES:
+            raise ValueError(
+                "mesh_preservation.mesh_reuse_policy must be one of "
+                f"{sorted(SUPPORTED_MESH_REUSE_POLICIES)}, got {self.mesh_reuse_policy!r}"
+            )
+        if not self.canonical_orientation:
+            raise ValueError("mesh_preservation.canonical_orientation must not be empty")
+
+
+@dataclass(slots=True)
 class DesignBrief:
     name: str
     description: str
@@ -125,6 +296,9 @@ class DesignBrief:
     fillet_radius: float = 0.0
     lid_style: str = "open_top"
     closure: Closure | None = None
+    design_intent: DesignIntent | None = None
+    mesh_preservation: MeshPreservation | None = None
+    drawer_stack: DrawerStack | None = None
     requirements: list[str] = field(default_factory=list)
     cutouts: list[Cutout] = field(default_factory=list)
     mounting_holes: list[MountingHole] = field(default_factory=list)
@@ -178,6 +352,19 @@ class DesignBrief:
             if self.lid_style and self.lid_style != self.closure.type:
                 raise ValueError("lid_style must match closure.type when closure metadata is provided")
             self.closure.validate(outer_height=self.outer_height)
+        if self.design_intent is not None:
+            self.design_intent.validate()
+            if (
+                self.design_intent.min_wall_thickness is not None
+                and self.design_intent.min_wall_thickness > self.wall_thickness
+            ):
+                raise ValueError("design_intent.min_wall_thickness must not exceed wall_thickness")
+        if self.mesh_preservation is not None:
+            self.mesh_preservation.validate()
+        if self.drawer_stack is not None:
+            self.drawer_stack.validate()
+        if (self.mesh_preservation is None) != (self.drawer_stack is None):
+            raise ValueError("mesh_preservation and drawer_stack must be provided together")
 
         for cutout in self.cutouts:
             cutout.validate()
@@ -210,6 +397,20 @@ class DesignBrief:
         internal_dimensions = Dimensions(**payload["internal_dimensions"])
         closure_payload = payload.get("closure")
         closure = Closure(**closure_payload) if closure_payload else None
+        design_intent_payload = payload.get("design_intent")
+        design_intent = DesignIntent(**design_intent_payload) if design_intent_payload else None
+        mesh_preservation_payload = payload.get("mesh_preservation")
+        mesh_preservation = (
+            MeshPreservation(**mesh_preservation_payload) if mesh_preservation_payload else None
+        )
+        drawer_stack_payload = payload.get("drawer_stack")
+        drawer_stack = None
+        if drawer_stack_payload:
+            drawer_payload = dict(drawer_stack_payload)
+            drawer_payload["patch_masks"] = [
+                DrawerPatchMask(**item) for item in drawer_payload.get("patch_masks", [])
+            ]
+            drawer_stack = DrawerStack(**drawer_payload)
         cutouts = [Cutout(**item) for item in payload.get("cutouts", [])]
         mounting_holes = [MountingHole(**item) for item in payload.get("mounting_holes", [])]
         brief = cls(
@@ -225,6 +426,9 @@ class DesignBrief:
             fillet_radius=payload.get("fillet_radius", 0.0),
             lid_style=payload.get("lid_style", "open_top"),
             closure=closure,
+            design_intent=design_intent,
+            mesh_preservation=mesh_preservation,
+            drawer_stack=drawer_stack,
             requirements=payload.get("requirements", []),
             cutouts=cutouts,
             mounting_holes=mounting_holes,

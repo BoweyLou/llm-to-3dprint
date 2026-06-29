@@ -1,0 +1,126 @@
+{
+  "name": "desk_organiser_mesh_preserved_drawers",
+  "description": "Mesh-preserved functional drawer conversion for the child-designed desk organiser. The original MakerLab surface mesh is partitioned across the fixed body and drawer fronts so the drawing-derived definition remains in the final output.",
+  "object_type": "mesh_preserved_drawer_organiser",
+  "library": "mesh",
+  "units": "mm",
+  "base_shape": "rectangular",
+  "internal_dimensions": {
+    "length": 100.0,
+    "width": 49.95,
+    "height": 93.25
+  },
+  "wall_thickness": 2.2,
+  "base_thickness": 2.2,
+  "fillet_radius": 0.0,
+  "lid_style": "open_top",
+  "design_intent": {
+    "silhouette": "preserve the original drawing-derived desk organiser mesh while making the visible drawer side functional",
+    "visual_style": "child-designed organiser with the original MakerLab surface definition retained",
+    "symmetry": "none",
+    "surface_continuity": "source mesh triangles are partitioned without smoothing, decimation, redrawing, or remeshing",
+    "must_be_smooth": false,
+    "min_wall_thickness": 1.2,
+    "forbidden_features": [
+      "dropped source triangles",
+      "duplicated source triangles",
+      "redrawn drawer fronts",
+      "decimated surface mesh"
+    ],
+    "cross_sections": [
+      "front side after 180 degree rotation shows four drawer fronts with original handles",
+      "each drawer front carries its source mesh patch and a generated backing tray",
+      "fixed body keeps all non-drawer source mesh triangles and receives generated cabinet rails behind the openings"
+    ],
+    "notes": "The source 3MF is a one-piece MakerLab Image to 3D v2 mesh with 490,290 facets; output parts must account for every source triangle exactly once."
+  },
+  "mesh_preservation": {
+    "source_3mf": "/Users/yannickbowe/Downloads/reduced_color-2.3mf",
+    "source_model_member": "3D/Objects/object_1.model",
+    "mesh_reuse_policy": "partition_visible_mesh",
+    "canonical_orientation": "front_rotated_180",
+    "canonical_rotate_z_degrees": 180.0,
+    "require_triangle_accounting": true,
+    "notes": "Canonical orientation matches the corrected Bambu render made with --rotate 180 --camera-view 1."
+  },
+  "drawer_stack": {
+    "drawer_count": 4,
+    "face": "front",
+    "mode": "separate_removable_trays",
+    "clearance": 0.5,
+    "min_clearance": 0.4,
+    "max_clearance": 0.6,
+    "drawer_wall_thickness": 1.4,
+    "body_wall_thickness": 2.2,
+    "drawer_depth": 30.0,
+    "front_lip_depth": 2.0,
+    "front_visibility_depth": 2.2,
+    "local_visibility_depth": 1.4,
+    "visibility_grid": 0.35,
+    "skin_selection_strategy": "front_visible_raycast",
+    "front_normal_min_y": 0.25,
+    "min_patch_component_triangles": 20,
+    "front_backing_offset": 0.8,
+    "source_skin_shell_thickness": 0.8,
+    "front_patch_includes": [
+      "original drawer faces",
+      "original round handles",
+      "original cross-hatch and line surface relief"
+    ],
+    "patch_masks": [
+      {
+        "name": "drawer_1_front",
+        "x_min": 2.0,
+        "x_max": 50.1,
+        "y_min": 10.0,
+        "y_max": 26.0,
+        "z_min": 4.0,
+        "z_max": 23.0,
+        "notes": "Upper cross-hatched drawer front and handle on the corrected front side."
+      },
+      {
+        "name": "drawer_2_front",
+        "x_min": 2.0,
+        "x_max": 50.1,
+        "y_min": 10.0,
+        "y_max": 26.0,
+        "z_min": -8.0,
+        "z_max": 4.0,
+        "notes": "Second drawer front and handle."
+      },
+      {
+        "name": "drawer_3_front",
+        "x_min": 2.0,
+        "x_max": 50.1,
+        "y_min": 10.0,
+        "y_max": 26.0,
+        "z_min": -23.0,
+        "z_max": -8.0,
+        "notes": "Third drawer front and handle."
+      },
+      {
+        "name": "drawer_4_front",
+        "x_min": 2.0,
+        "x_max": 50.1,
+        "y_min": 10.0,
+        "y_max": 26.0,
+        "z_min": -46.1,
+        "z_max": -23.0,
+        "notes": "Lower cross-hatched drawer front and handle."
+      }
+    ],
+    "notes": "Masks use source mesh coordinates before the canonical 180 degree Z rotation; all selected triangles move to drawer parts, all remaining source triangles stay on the fixed body."
+  },
+  "requirements": [
+    "Preserve every original source mesh triangle exactly once across output parts.",
+    "Do not redraw, smooth, decimate, or replace the visible drawing-derived mesh.",
+    "Make the four visible drawer fronts with handles separate removable drawers.",
+    "Add only functional backing, cabinet rails, and tray geometry behind the preserved mesh patches."
+  ],
+  "cutouts": [],
+  "mounting_holes": [],
+  "notes": [
+    "Source mesh dimensions from Bambu Studio are approximately 100.0 x 49.95 x 93.25 mm.",
+    "STL and 3MF are the authoritative mesh-preserved outputs; STEP is not emitted for the triangle mesh skin."
+  ]
+}

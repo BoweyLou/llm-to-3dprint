@@ -1,0 +1,14 @@
+[2026-06-07 10:28:49.373189] [0x00000001fbdf6c40] [trace]   Initializing StaticPrintConfigs
+[2026-06-07 10:28:49.378162] [0x00000001fbdf6c40] [error]   main start
+[2026-06-07 10:28:49.378196] [0x00000001fbdf6c40] [error]   main check linux
+[2026-06-07 10:28:49.378753] [0x00000001fbdf6c40] [warning] cli mode, Current CrealityPrint Version 01.09.03.50
+Function took 0 seconds to execute.
+[2026-06-07 10:28:49.380875] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:28:49.380879] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:28:49.380880] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:28:49.380882] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:28:49.380891] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:28:49.380892] [0x00000001fbdf6c40] [warning] Model::clear_objects() - Clearing 0 objects
+[2026-06-07 10:28:49.382642] [0x00000001fbdf6c40] [warning] no filament colors found in projects
+[2026-06-07 10:28:49.383356] [0x00000001fbdf6c40] [error]   calc_exclude_triangles:Unable to create exclude triangles
+

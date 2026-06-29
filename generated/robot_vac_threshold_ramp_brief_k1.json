@@ -1,0 +1,57 @@
+{
+  "name": "robot_vac_threshold_ramp",
+  "units": "mm",
+  "purpose": "Modular one-sided threshold ramp for robot vacuums crossing a 680 mm wide, 16.5 mm high doorway threshold, split for the smaller Creality K1 build plate.",
+  "target_printer": {
+    "model": "Creality K1",
+    "build_volume": [220, 220, 250],
+    "max_segment_width": 205
+  },
+  "dimensions": {
+    "total_width": 680,
+    "threshold_height": 16.5,
+    "ramp_run_depth": 78.333,
+    "top_landing_depth": 11.667,
+    "quarter_round_relief_radius": 15,
+    "rear_reinforced_zone_depth": 29.667,
+    "overall_depth": 90,
+    "traction_line_height": 0.4,
+    "segment_count": 4,
+    "nominal_segment_width": 170,
+    "straight_seam_clearance": 0.35,
+    "rounded_key_depth": 3.2,
+    "rounded_key_centers_y": [-58, -31],
+    "seam_rail_width": 18,
+    "side_entry_curve_inset": 42,
+    "side_entry_slope_width": 48,
+    "side_entry_feather_edge_height": 0.33,
+    "side_entry_fade_start_y": -58,
+    "protected_rear_fit_zone_y": -8,
+    "underside_relief_shell_thickness": 3.2,
+    "underside_relief_peak_y": -24,
+    "underside_relief_peak_z": 8
+  },
+  "features": [
+    "four printable ramp segments sized for the Creality K1 bed",
+    "longer one-sided 1:4.7 slope after test fitting",
+    "concave 15 mm quarter-round relief at the tall end",
+    "1.5 mm reinforced riser above the quarter-round relief",
+    "lower shallow raised wavy traction lines on the sloped top face",
+    "solid exterior rails around the clean full-width print plates",
+    "straight seams with two shallow rounded alignment keys per join",
+    "0.35 mm clearance across keyed seams",
+    "conservative underside center relief to save filament while keeping edges and rear contact solid",
+    "curved side-entry footprint on the far left and far right ends",
+    "clean lateral side-entry ramps on the outer ends that feather down near floor height",
+    "side-entry footprint and ramp width taper out gradually before the high rear quarter-round fit zone",
+    "symmetric shallow raised wave traction lines",
+    "flat bottom for tape or friction placement"
+  ],
+  "assumptions": [
+    "single-sided ramp from floor up to threshold",
+    "PETG preferred; PLA acceptable for indoor proof-of-fit",
+    "the current join strategy uses shallow clean alignment keys instead of wavy jigsaw edges",
+    "full-width plates should be printed as four separate Creality K1 jobs or plates",
+    "the generic 3MF files are intended as slicer-ready geometry imports, with STL also provided"
+  ]
+}

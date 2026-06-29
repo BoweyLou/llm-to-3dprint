@@ -1,0 +1,77 @@
+{
+  "name": "desk_organiser_mesh_preserved_drawers_a1_handoff",
+  "description": "Bambu A1 handoff for mesh-preserved functional drawer organiser. Source mesh triangles are partitioned across the fixed body and drawer fronts.",
+  "target_printer": "A1",
+  "nozzle_diameter": 0.4,
+  "ams": "none",
+  "filament_count": 1,
+  "export_backend": "clean_room_3mf",
+  "output_3mf": "/tmp/desk_front_review_build_check/desk_organiser_mesh_preserved_drawers_plate.3mf",
+  "mesh_preserved_print_3mf": "/tmp/desk_front_review_build_check/desk_organiser_mesh_preserved_drawers_plate.3mf",
+  "assembled_preview_3mf": "/tmp/desk_front_review_build_check/desk_organiser_mesh_preserved_drawers_assembled_preview.3mf",
+  "front_review_3mf": "/tmp/desk_front_review_build_check/desk_organiser_mesh_preserved_drawers_front_review.3mf",
+  "source_skin_preview_3mf": "/tmp/desk_front_review_build_check/desk_organiser_mesh_preserved_drawers_source_skin_preview.3mf",
+  "combined_review_3mf": "/tmp/desk_front_review_build_check/desk_organiser_mesh_preserved_drawers_plate.3mf",
+  "functional_core_3mf": "/tmp/desk_front_review_build_check/desk_organiser_mesh_preserved_drawers_functional_plate.3mf",
+  "source_brief": "desk_organiser_mesh_preserved_drawers",
+  "parts": [
+    {
+      "name": "desk_organiser_mesh_preserved_drawers_body_preserved_mesh",
+      "path": "/tmp/desk_front_review_build_check/desk_organiser_mesh_preserved_drawers_body_preserved_mesh.stl",
+      "part_name": "desk_organiser_mesh_preserved_drawers_body_preserved_mesh",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 1,
+      "filament": 1,
+      "notes": "419321 preserved source triangles; 463815 generated skin-shell triangles; 256 generated functional triangles."
+    },
+    {
+      "name": "desk_organiser_mesh_preserved_drawers_drawer_1",
+      "path": "/tmp/desk_front_review_build_check/desk_organiser_mesh_preserved_drawers_drawer_1.stl",
+      "part_name": "desk_organiser_mesh_preserved_drawers_drawer_1",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 1,
+      "filament": 1,
+      "notes": "30305 preserved source triangles; 29229 generated skin-shell triangles; 92 generated functional triangles."
+    },
+    {
+      "name": "desk_organiser_mesh_preserved_drawers_drawer_2",
+      "path": "/tmp/desk_front_review_build_check/desk_organiser_mesh_preserved_drawers_drawer_2.stl",
+      "part_name": "desk_organiser_mesh_preserved_drawers_drawer_2",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 1,
+      "filament": 1,
+      "notes": "5225 preserved source triangles; 5655 generated skin-shell triangles; 92 generated functional triangles."
+    },
+    {
+      "name": "desk_organiser_mesh_preserved_drawers_drawer_3",
+      "path": "/tmp/desk_front_review_build_check/desk_organiser_mesh_preserved_drawers_drawer_3.stl",
+      "part_name": "desk_organiser_mesh_preserved_drawers_drawer_3",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 1,
+      "filament": 1,
+      "notes": "1859 preserved source triangles; 1353 generated skin-shell triangles; 92 generated functional triangles."
+    },
+    {
+      "name": "desk_organiser_mesh_preserved_drawers_drawer_4",
+      "path": "/tmp/desk_front_review_build_check/desk_organiser_mesh_preserved_drawers_drawer_4.stl",
+      "part_name": "desk_organiser_mesh_preserved_drawers_drawer_4",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 1,
+      "filament": 1,
+      "notes": "33580 preserved source triangles; 32088 generated skin-shell triangles; 92 generated functional triangles."
+    }
+  ],
+  "notes": [
+    "Single-material Bambu A1 project.",
+    "The mesh-preserved print 3MF and per-part STLs retain the source triangle skin.",
+    "The front-review 3MF is view-only and rotated for Bambu's camera to show the drawer side.",
+    "The source-skin preview 3MF contains only the original source triangles for visual proof.",
+    "The functional-core 3MF is diagnostic generated geometry only.",
+    "STEP is intentionally not emitted for the preserved mesh skin."
+  ]
+}

@@ -153,7 +153,11 @@ def test_mcp_initialize_and_tools_list() -> None:
     )
 
     assert responses[0]["result"]["protocolVersion"] == "2025-06-18"
-    assert responses[0]["result"]["capabilities"] == {"tools": {"listChanged": False}}
+    assert responses[0]["result"]["capabilities"] == {
+        "tools": {"listChanged": False},
+        "resources": {"listChanged": False},
+        "prompts": {"listChanged": False},
+    }
     tool_names = {tool["name"] for tool in responses[1]["result"]["tools"]}
     assert "validate_bambu_project" in tool_names
     assert "export_bambu_3mf_gui" in tool_names

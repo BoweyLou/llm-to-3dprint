@@ -1,0 +1,105 @@
+{
+  "name": "k1_stackable_petg_crate_half_height",
+  "description": "Near-full-plate, half-height stackable crate for the Creality K1, tuned for black PETG, low filament use, denser diamond visibility cutouts, hand holds, and a front label area.",
+  "object_type": "box",
+  "library": "cadquery",
+  "units": "mm",
+  "base_shape": "rectangular",
+  "internal_dimensions": {
+    "length": 201.6,
+    "width": 201.6,
+    "height": 117.8
+  },
+  "wall_thickness": 1.2,
+  "base_thickness": 2.2,
+  "fillet_radius": 0.0,
+  "lid_style": "open_top",
+  "target_printer": {
+    "model": "Creality K1",
+    "build_volume": [
+      220.0,
+      220.0,
+      250.0
+    ],
+    "usable_design_envelope": [
+      216.0,
+      216.0,
+      120.0
+    ]
+  },
+  "material": {
+    "filament": "black PETG",
+    "diameter": 1.75,
+    "density_g_per_cm3": 1.27,
+    "notes": "Dry PETG and avoid an outside brim unless the slicer keeps adhesion inside the 220 mm bed."
+  },
+  "dimensions": {
+    "outer_top_width": 216.0,
+    "outer_top_depth": 216.0,
+    "outer_bottom_locator_width": 204.0,
+    "outer_bottom_locator_depth": 204.0,
+    "height": 120.0,
+    "wall_thickness": 1.2,
+    "top_rim_wall_thickness": 3.2,
+    "base_thickness": 2.2,
+    "top_opening_width": 209.6,
+    "top_opening_depth": 209.6,
+    "estimated_internal_volume_liters": 5.0
+  },
+  "stacking": {
+    "type": "tapered bottom locator into reinforced top rim",
+    "bottom_locator_width": 204.0,
+    "top_opening_width": 209.6,
+    "nominal_clearance_per_side": 2.8,
+    "drop_in_depth": 12.0
+  },
+  "features": [
+    {
+      "name": "left_right_hand_holds",
+      "description": "Lower side slots with reinforced pads sized for lifting a half-height crate.",
+      "slot_length": 66.0,
+      "slot_height": 22.0,
+      "center_z": 72.0
+    },
+    {
+      "name": "front_label_plaque",
+      "description": "Raised flat front plaque for adhesive labels.",
+      "width": 112.0,
+      "height": 30.0,
+      "center_z": 54.0
+    },
+    {
+      "name": "internal_ribs",
+      "description": "Taper-following vertical ribs and low floor ribs add stiffness without thick solid walls."
+    },
+    {
+      "name": "dense_visibility_hole_lattice",
+      "description": "Five rows of smaller repeating diamond holes on all four sides reduce material and make contents visible while avoiding the label plaque, hand-hold pads, top rim, and base.",
+      "shape": "diamond",
+      "hole_width": 17.0,
+      "hole_height": 16.0
+    }
+  ],
+  "manufacturing": {
+    "print_orientation": "upright, open top up",
+    "supports_allowed": false,
+    "suggested_nozzle": 0.4,
+    "suggested_layer_height": 0.24,
+    "suggested_wall_loops": 3,
+    "suggested_infill_percent": 8,
+    "suggested_bed_adhesion": "Avoid an outside brim unless the slicer keeps it inside the 220 mm bed."
+  },
+  "requirements": [
+    "Fit inside the Creality K1 build envelope with margin.",
+    "Use the full practical plate footprint while reducing height to a crate-like half-height form.",
+    "Use a stackable interface compatible with the earlier tall box design.",
+    "Keep the design single-material and support-free.",
+    "Use more diamond cutouts than the tall box variant to reduce filament and improve visibility.",
+    "Provide hand holds and a visible label location."
+  ],
+  "notes": [
+    "This variant intentionally keeps the same top footprint and stacking dimensions as the tall box.",
+    "The diamond grid is denser, but keep-outs preserve the grip pads, label plaque, base, and top rim.",
+    "Slice preview should still be checked before a long PETG print because the footprint is close to the K1 limits."
+  ]
+}

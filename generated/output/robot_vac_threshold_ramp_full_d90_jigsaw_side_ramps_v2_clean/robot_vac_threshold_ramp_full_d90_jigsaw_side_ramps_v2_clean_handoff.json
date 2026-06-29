@@ -1,0 +1,90 @@
+{
+  "name": "robot_vac_threshold_ramp_full_d90_jigsaw_side_ramps_v2_clean",
+  "units": "mm",
+  "target_printer": "Bambu Lab A1",
+  "print_intent": "three single-material plate files",
+  "slope_ratio": 4.75,
+  "assembly": {
+    "order": [
+      "left",
+      "middle",
+      "right"
+    ],
+    "jigsaw_clearance": 0.35,
+    "side_entry_curve_inset": 42.0,
+    "side_entry_slope_width": 48.0,
+    "side_entry_edge_height": 0.33,
+    "notes": "Outer ends use separate solid side-entry wings so the lightweight internal cutout is not projected onto the side ramp."
+  },
+  "plates": [
+    {
+      "label": "left",
+      "stl": "robot_vac_threshold_ramp_full_d90_jigsaw_side_ramps_v2_clean_plate_1_left.stl",
+      "3mf": "robot_vac_threshold_ramp_full_d90_jigsaw_side_ramps_v2_clean_plate_1_left.3mf",
+      "triangles": 3440,
+      "bounds": {
+        "min": [
+          -115.795,
+          -45.0,
+          0.0
+        ],
+        "max": [
+          115.795,
+          45.0,
+          16.5
+        ],
+        "size": [
+          231.59,
+          90.0,
+          16.5
+        ]
+      }
+    },
+    {
+      "label": "middle",
+      "stl": "robot_vac_threshold_ramp_full_d90_jigsaw_side_ramps_v2_clean_plate_2_middle.stl",
+      "3mf": "robot_vac_threshold_ramp_full_d90_jigsaw_side_ramps_v2_clean_plate_2_middle.3mf",
+      "triangles": 3084,
+      "bounds": {
+        "min": [
+          -118.44,
+          -45.0,
+          0.0
+        ],
+        "max": [
+          118.44,
+          45.0,
+          16.5
+        ],
+        "size": [
+          236.88,
+          90.0,
+          16.5
+        ]
+      }
+    },
+    {
+      "label": "right",
+      "stl": "robot_vac_threshold_ramp_full_d90_jigsaw_side_ramps_v2_clean_plate_3_right.stl",
+      "3mf": "robot_vac_threshold_ramp_full_d90_jigsaw_side_ramps_v2_clean_plate_3_right.3mf",
+      "triangles": 3440,
+      "bounds": {
+        "min": [
+          -115.217,
+          -45.0,
+          0.0
+        ],
+        "max": [
+          115.217,
+          45.0,
+          16.5
+        ],
+        "size": [
+          230.434,
+          90.0,
+          16.5
+        ]
+      }
+    }
+  ]
+}

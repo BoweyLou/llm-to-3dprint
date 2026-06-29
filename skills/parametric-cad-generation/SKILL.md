@@ -7,12 +7,15 @@ description: Design 3D-printable parametric objects and enclosures in Python usi
 
 Generate and iterate Python CAD scripts for printable parts. Prefer the bundled CLI for repeatable brief validation, prompt generation, and starter CadQuery scaffolds.
 
+When the `cad` / CAD Skills / text-to-cad skill is available, use it as the default clean-CAD generation and review layer for new mechanical parts. Keep this skill responsible for the 3D-print-specific orchestration around design contracts, mesh preservation, Bambu handoff, and printer-native output.
+
 If the request involves multicolor output, printer-native `3MF`, AMS/MMU workflows, or slicer-specific handoff requirements, read `references/multicolor-backends.md` before committing to a deliverable or color strategy. Read `references/multicolor-brief-fields.md` when you need a canonical checklist for capturing multicolor intent in the brief.
 
 ## Workflow
 1. Capture the design brief from the user's request.
 Default to millimeters.
-Default to `cadquery` unless the part clearly needs `build123d` or assembly-heavy behavior.
+Default to text-to-cad's build123d/STEP-first workflow for clean mechanical CAD when that skill is installed.
+Use this repo's local `cadquery` renderer for rectangular enclosure starter scripts, for backwards compatibility, or when text-to-cad is unavailable.
 Use rectangular enclosure assumptions only when the user is describing a box, housing, case, or cavity-based part.
 2. Capture manufacturing intent before writing CAD when color, assembly, bed splitting, or printer-native output matters.
 At minimum, resolve:
@@ -33,8 +36,9 @@ Use one of:
 - hybrid workflows when some details should print in-place and others should remain separate
 6. Run the bundled CLI to validate the brief and, when applicable, render a starter CadQuery script.
 7. If the renderer is too narrow for the requested shape, use the bundled prompt generator as the base for a custom Python CAD script.
+If text-to-cad is available, prefer handing the clean-CAD portion to that workflow instead of stretching this repo's starter renderer beyond rectangular enclosure cases.
 8. Syntax-check generated Python locally.
-9. If `cadquery` or `build123d` is installed, run the script and export STL and STEP.
+9. If `cadquery` or `build123d` is installed, run the script and export STEP as the primary artifact, then STL/3MF sidecars as needed.
 If CAD dependencies are missing, still deliver the script and state that geometry export was not executed.
 10. For enclosure lids or mating parts, validate the seated assembly with a boolean interference check, not just a visual preview.
 11. When multicolor output, printer-native output, or a printer-specific multi-part split is requested, generate the manufacturing handoff as deliberately as the CAD.
@@ -42,6 +46,7 @@ Do not stop at geometry if the user asked for a printer-ready result or gave a s
 12. Validate the final artifact at the right layer:
 - geometry build success
 - fit/interference for mating parts
+- source-triangle accounting when a source mesh must be preserved
 - body separation and non-overlap for color regions
 - backend export success
 - final project structure when `3MF` or slicer-native output is requested
@@ -63,6 +68,7 @@ Check derived slopes, landings, connector or fastener positions, rib/vent positi
 - Treat multicolor, bed splitting, and printer-specific output as manufacturing problems, not just geometry problems.
 - Plain `STL` does not carry reliable color intent. Do not describe it as a printer-ready multicolor artifact.
 - Prefer printer-native or slicer-ready `3MF` when the user names a target printer/slicer and the design is multi-part, split across the bed, multicolor, or intended as a ready-to-open print project.
+- For clean CAD generated through text-to-cad, validate the STEP first with its inspection tooling before handing STL/3MF sidecars to this repo's Bambu workflow.
 - For Bambu A1/A-series targets, create a Bambu handoff spec by default for multi-part or bed-split designs; attempt a Bambu-authored `3MF` when the local backend is available, otherwise provide standard `3MF` plate files plus the handoff spec and state the limitation.
 - For single-material Bambu fallback `3MF` files, prefer neutral direct-mesh 3MF structure: mesh objects directly in `3D/3dmodel.model` resources, build items pointing directly at those objects, and no partial Bambu project metadata.
 - Use Bambu-style component wrappers and `3D/Objects/object_N.model` only when patching or deriving from a known-good Studio-authored template.
@@ -76,6 +82,7 @@ Check derived slopes, landings, connector or fastener positions, rib/vent positi
 - Keep in-place multicolor bodies as distinct non-overlapping solids with clean adjacency.
 - If the printer-native result depends on a slicer-specific project format, use that slicer as the final serializer instead of inventing a clean-room format unless the repo already has a validated writer.
 - For Bambu-style one-click output, prefer `Bambu Studio` as the final serializer and use a handoff spec plus seed-template workflow when available.
+- When the user requires an existing artistic mesh to be retained, use the mesh-preserved workflow instead of a clean parametric redraw: partition source triangles across the fixed body and moving parts, select movable skins from the front-visible surface rather than a through-volume slice, add generated shell/backing/tray geometry, and validate source-triangle accounting, slicer-closed mesh health, and functional-core mesh health before slicer review.
 - Keep comments short and practical. Document units and coordinate assumptions.
 - Preserve the existing script across refinements when possible.
 
@@ -107,6 +114,7 @@ If a supposedly successful export looks wrong in the slicer, inspect the project
 - Prefer generic `STL`/`STEP` output when the user only needs printable geometry.
 - When the target is a specific slicer or printer ecosystem, make that backend explicit in the brief and handoff, even for single-color parts.
 - If the active repo already provides printer-specific tooling, use it instead of re-inventing export conventions.
+- If CAD Skills / text-to-cad is available, use it for clean STEP/build123d generation and CAD Explorer review rather than duplicating those generic capabilities here.
 - For Bambu workflows, expect raw geometry imports to be only a handoff layer. Use Bambu Studio or validated Bambu automation to produce the final visible multicolor `3MF`.
 - For single-color Bambu jobs split into multiple parts or plates, still produce the Bambu handoff spec and a `3MF` deliverable when possible; AMS is not required for printer-native project value.
 

@@ -1,0 +1,26 @@
+{
+  "plates": [
+    {
+      "plate_name": "Plate 1",
+      "need_arrange": false,
+      "objects": [
+        {
+          "path": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_crate_half_height/k1_stackable_petg_crate_half_height.stl",
+          "count": 1,
+          "filaments": [
+            1
+          ],
+          "pos_x": [
+            0.0
+          ],
+          "pos_y": [
+            0.0
+          ],
+          "pos_z": [
+            0.0
+          ]
+        }
+      ]
+    }
+  ]
+}

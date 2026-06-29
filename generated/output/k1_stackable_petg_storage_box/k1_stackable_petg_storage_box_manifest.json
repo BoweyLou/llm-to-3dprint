@@ -1,0 +1,71 @@
+{
+  "part_name": "k1_stackable_petg_storage_box",
+  "target_printer": "Creality K1",
+  "target_build_volume_mm": [
+    220.0,
+    220.0,
+    250.0
+  ],
+  "material": "black PETG",
+  "outputs": {
+    "box_stl": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_storage_box/k1_stackable_petg_storage_box.stl",
+    "box_step": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_storage_box/k1_stackable_petg_storage_box.step",
+    "stack_interface_coupon_stl": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_storage_box/k1_stackable_petg_storage_box_stack_interface_coupon.stl",
+    "stack_interface_coupon_step": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_storage_box/k1_stackable_petg_storage_box_stack_interface_coupon.step"
+  },
+  "box_bounds_mm": {
+    "min_x": -108.0,
+    "max_x": 108.0,
+    "min_y": -108.0,
+    "max_y": 108.0,
+    "min_z": 0.0,
+    "max_z": 238.0,
+    "size": [
+      216.0,
+      216.0,
+      238.0
+    ]
+  },
+  "coupon_bounds_mm": {
+    "min_x": -100.0,
+    "max_x": 94.0,
+    "min_y": -42.0,
+    "max_y": 42.0,
+    "min_z": 0.0,
+    "max_z": 22.0,
+    "size": [
+      194.0,
+      84.0,
+      22.0
+    ]
+  },
+  "stacking": {
+    "bottom_locator_mm": 204.0,
+    "top_opening_mm": 209.6,
+    "clearance_per_side_mm": 2.799999999999997,
+    "locator_drop_depth_mm": 12.0
+  },
+  "features": {
+    "hand_slot_length_mm": 72.0,
+    "hand_slot_height_mm": 24.0,
+    "hand_slot_center_z_mm": 156.0,
+    "label_plaque_width_mm": 118.0,
+    "label_plaque_height_mm": 42.0,
+    "label_center_z_mm": 96.0,
+    "visibility_hole_shape": "support-friendly diamonds",
+    "visibility_hole_width_mm": 22.0,
+    "visibility_hole_height_mm": 28.0,
+    "front_back_visibility_hole_count": 19,
+    "side_visibility_hole_count": 17
+  },
+  "estimated_solid_model_volume_cm3": 697.9,
+  "estimated_petg_mass_from_cad_g": 886.3,
+  "print_notes": [
+    "Print upright with the open top up.",
+    "Supports should be off; all designed overhangs are shallow or vertical cuts.",
+    "Diamond visibility holes are kept out of the label plaque, hand pads, rim, and base.",
+    "At full size, avoid an outside brim unless your slicer keeps it inside the 220 mm bed.",
+    "Suggested starting point: 0.24 mm layers, 3 wall loops, 8-10% gyroid or cubic infill.",
+    "Print the stack-interface coupon first if you want to check stack clearance before the full-height job."
+  ]
+}

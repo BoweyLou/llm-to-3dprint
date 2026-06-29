@@ -1,0 +1,159 @@
+{
+  "part_name": "k1_stackable_petg_crate_v2_light_slots",
+  "target_printer": "Creality K1",
+  "target_build_volume_mm": [
+    220.0,
+    220.0,
+    250.0
+  ],
+  "material": "PETG",
+  "design_intent": "native K1 support-free V2 crate: lighter slots, no diamond stress points, self-stack only",
+  "outputs": {
+    "crate_stl": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_crate_v2_light_slots/k1_stackable_petg_crate_v2_light_slots.stl",
+    "crate_step": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_crate_v2_light_slots/k1_stackable_petg_crate_v2_light_slots.step",
+    "crate_bed_placed_stl_for_slicers": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_crate_v2_light_slots/k1_stackable_petg_crate_v2_light_slots_bed_placed.stl",
+    "validation_coupon_stl": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_crate_v2_light_slots/k1_stackable_petg_crate_v2_light_slots_validation_coupon.stl",
+    "validation_coupon_step": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_crate_v2_light_slots/k1_stackable_petg_crate_v2_light_slots_validation_coupon.step",
+    "validation_coupon_bed_placed_stl_for_slicers": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_crate_v2_light_slots/k1_stackable_petg_crate_v2_light_slots_validation_coupon_bed_placed.stl",
+    "manifest": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/output/k1_stackable_petg_crate_v2_light_slots/k1_stackable_petg_crate_v2_light_slots_manifest.json"
+  },
+  "crate_bounds_mm": {
+    "min_x": -106.25,
+    "max_x": 106.25,
+    "min_y": -106.25,
+    "max_y": 106.25,
+    "min_z": 0.0,
+    "max_z": 100.0,
+    "size": [
+      212.5,
+      212.5,
+      100.0
+    ]
+  },
+  "crate_bed_placed_bounds_mm": {
+    "min_x": 3.75,
+    "max_x": 216.25,
+    "min_y": 3.75,
+    "max_y": 216.25,
+    "min_z": 0.0,
+    "max_z": 100.0,
+    "size": [
+      212.5,
+      212.5,
+      100.0
+    ]
+  },
+  "coupon_bounds_mm": {
+    "min_x": -101.0,
+    "max_x": 79.0,
+    "min_y": -61.0,
+    "max_y": 60.0,
+    "min_z": 0.0,
+    "max_z": 70.0,
+    "size": [
+      180.0,
+      121.0,
+      70.0
+    ]
+  },
+  "coupon_bed_placed_bounds_mm": {
+    "min_x": 9.0,
+    "max_x": 189.0,
+    "min_y": 49.0,
+    "max_y": 170.0,
+    "min_z": 0.0,
+    "max_z": 70.0,
+    "size": [
+      180.0,
+      121.0,
+      70.0
+    ]
+  },
+  "bed_placement_if_centered_at_110_110_mm": {
+    "x_min": 3.75,
+    "x_max": 216.25,
+    "y_min": 3.75,
+    "y_max": 216.25,
+    "z_min": 0.0,
+    "z_max": 100.0
+  },
+  "geometry_mm": {
+    "native_envelope": [
+      212.5,
+      212.5,
+      100.0
+    ],
+    "wall_thickness": 0.9,
+    "base_thickness": 1.6,
+    "top_rim_wall": 2.1,
+    "top_rim_height": 8.0,
+    "vertical_rib_width": 3.5,
+    "vertical_rib_depth": 2.4
+  },
+  "stacking": {
+    "compatible_with": "k1_stackable_petg_crate_v2_light_slots only",
+    "bottom_locator_mm": 200.5,
+    "top_opening_mm": 208.3,
+    "clearance_per_side_mm": 3.9,
+    "locator_drop_depth_mm": 10.0,
+    "stack_stop_outer_mm": 210.0
+  },
+  "cutouts": {
+    "shape": "vertical slot windows with short 45-degree cap facets",
+    "slot_target_width_mm": 10.0,
+    "slot_target_height_mm": 24.0,
+    "minimum_material_between_same-row_openings_mm": 12.0,
+    "front_back_slot_count": 23,
+    "side_slot_count": 26,
+    "total_slot_count": 49,
+    "diamond_pattern_retired": true
+  },
+  "handles": {
+    "shape": "support-free peaked arch, no long horizontal bridge",
+    "width_mm": 68.0,
+    "height_mm": 24.0,
+    "center_z_mm": 58.0,
+    "pad_width_mm": 82.0,
+    "pad_height_mm": 32.0,
+    "pad_thickness_mm": 0.8
+  },
+  "label_area": {
+    "front_plaque_width_mm": 100.0,
+    "front_plaque_height_mm": 24.0,
+    "center_z_mm": 45.0
+  },
+  "estimates": {
+    "crate_solid_model_volume_cm3": 253.82,
+    "crate_estimated_petg_mass_from_cad_g": 322.4,
+    "crate_estimated_pla_mass_from_cad_g": 314.7,
+    "coupon_solid_model_volume_cm3": 43.39,
+    "coupon_estimated_petg_mass_from_cad_g": 55.1,
+    "previous_failed_job_petg_slicer_estimate_g": 287.84,
+    "previous_failed_family_petg_mass_from_cad_g": 440.5,
+    "cad_estimates_are_not_slicer_estimates": true
+  },
+  "slice_profile_target": {
+    "filament_profile": "CR/Generic PETG",
+    "nozzle_temperature_c": 250,
+    "bed_temperature_c": 70,
+    "supports": "off",
+    "enable_support_expected": 0,
+    "brim": "off unless adhesion failure is proven"
+  },
+  "print_order": [
+    "Print the validation coupon first.",
+    "Inspect slot roofs, peaked handle roof, and stack-corner fit.",
+    "Only slice and print the full crate after the coupon proves clean."
+  ],
+  "support_free_design_notes": [
+    "No slicer supports should be used.",
+    "Slots use small cap facets instead of diamonds or circular bridge-heavy tops.",
+    "Side handholds use a peaked upper profile to avoid a long unsupported bridge.",
+    "Slots are kept out of corners, the label plaque, handle pads, the top rim, and the base."
+  ],
+  "generator": {
+    "script": "/Volumes/Myrtle/Code/04_Code/LLM_to_3DPrint/generated/k1_stackable_petg_crate_v2_light_slots.py",
+    "cad_kernel": "OpenCascade via OCP direct bindings",
+    "cadquery_note": "CadQuery high-level import was unavailable locally; direct OCP export keeps STEP/STL output."
+  }
+}

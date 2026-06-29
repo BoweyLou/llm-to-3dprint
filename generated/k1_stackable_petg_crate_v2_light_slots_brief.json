@@ -1,0 +1,23 @@
+{
+  "part_name": "k1_stackable_petg_crate_v2_light_slots",
+  "status": "new V2 artifact family; older failed crate files intentionally left intact",
+  "target_printer": "Creality K1",
+  "native_envelope_mm": [212.5, 212.5, 100.0],
+  "material_priority": "PETG, light filament use over maximum stack strength",
+  "requirements": {
+    "support_free": true,
+    "supports_in_slicer": "off",
+    "diamond_cutouts": "retired",
+    "visibility_cutouts": "repeating vertical slot windows, about 10 x 24 mm, staggered rows, 12 mm minimum same-row ligament",
+    "handholds": "side arched/peaked handholds about 68 x 24 mm with no long unsupported bridge",
+    "label_area": "front plaque kept free of cutouts",
+    "stacking": "V2 self-stack only"
+  },
+  "test_plan": [
+    "Generate STL, STEP, and manifest for full crate and validation coupon.",
+    "Validate crate and coupon bounds are within the Creality K1 build volume.",
+    "Slice validation coupon first with PETG 250 C nozzle, 70 C bed, supports off, no brim unless adhesion failure is proven.",
+    "Inspect G-code for enable_support = 0, no ;TYPE:Support, all X/Y paths inside 0..220, and lower filament than the previous 287.84 g full-crate job.",
+    "Only print the full crate after the coupon validates clean slot roofs, handle roof, and stack-corner fit."
+  ]
+}

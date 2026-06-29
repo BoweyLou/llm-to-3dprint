@@ -1,0 +1,35 @@
+{
+  "part_name": "k1_stackable_petg_crate_v2_light_slots",
+  "slice_status": "blocked",
+  "generated_gcode": false,
+  "intended_first_print": "validation coupon",
+  "preferred_input_for_gui_slicing": "k1_stackable_petg_crate_v2_light_slots_validation_coupon_bed_placed.stl",
+  "support_off_process_override": "k1_stackable_petg_crate_v2_light_slots_petg_support_off_process_full.json",
+  "attempts": [
+    {
+      "tool": "Creality Print CLI",
+      "input": "validation coupon STL",
+      "result": "failed before G-code generation",
+      "error": "calc_exclude_triangles: Unable to create exclude triangles"
+    },
+    {
+      "tool": "Creality Print CLI",
+      "input": "validation coupon bed-placed STL",
+      "result": "failed before G-code generation",
+      "error": "calc_exclude_triangles: Unable to create exclude triangles"
+    },
+    {
+      "tool": "Bambu Studio CLI",
+      "input": "validation coupon bed-placed STL with Creality profile JSON",
+      "result": "failed before G-code generation",
+      "error": "plate is empty or has no object fully inside it"
+    }
+  ],
+  "required_manual_gcode_checks_after_gui_slice": [
+    "enable_support = 0",
+    "no ;TYPE:Support sections",
+    "brim_type = no_brim unless adhesion has become the proven failure mode",
+    "filament used [g] lower than the old failed job's 287.84 g for the full crate",
+    "all X/Y motion coordinates stay within 0..220"
+  ]
+}

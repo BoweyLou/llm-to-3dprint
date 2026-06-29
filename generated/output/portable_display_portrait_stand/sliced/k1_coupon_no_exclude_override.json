@@ -1,0 +1,10 @@
+{
+  "type": "process",
+  "setting_id": "portable_display_coupon_no_exclude",
+  "name": "Portable Display Coupon No Exclude Override",
+  "from": "system",
+  "instantiation": "true",
+  "inherits": "0.20mm Standard @Creality K1 0.4 nozzle",
+  "exclude_object": "0",
+  "gcode_label_objects": "0"
+}

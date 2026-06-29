@@ -13,10 +13,16 @@ dependencies = []
 
 [project.optional-dependencies]
 cad = [
-    "cadquery>=2.5",
-    "build123d>=0.9",
+    "cadquery>=2.7,<2.8",
+    "build123d>=0.10,<0.11",
     "numpy>=1.26",
     "matplotlib>=3.8",
+]
+mesh = [
+    "numpy>=1.26",
+    "trimesh>=4.0",
+    "open3d>=0.18",
+    "manifold3d>=3.0",
 ]
 dev = [
     "pytest>=8.0",

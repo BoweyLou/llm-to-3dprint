@@ -1,0 +1,108 @@
+{
+  "name": "robot_vac_threshold_ramp_a1_handoff",
+  "description": "Bambu Studio handoff for a single-color modular robot-vac threshold ramp sized for a 680 mm wide, 30 mm high threshold.",
+  "target_printer": "A1",
+  "nozzle_diameter": 0.4,
+  "ams": "none",
+  "filament_count": 1,
+  "export_backend": "bambu_studio_cli",
+  "output_3mf": "generated/output/robot_vac_threshold_ramp_a1_project.3mf",
+  "source_brief": "generated/robot_vac_threshold_ramp_brief.json",
+  "parts": [
+    {
+      "name": "ramp_segment_1",
+      "path": "generated/output/robot_vac_threshold_ramp_segment_1_of_3.stl",
+      "part_name": "segment_1",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 1,
+      "filament": 1,
+      "notes": "Left ramp segment."
+    },
+    {
+      "name": "ramp_segment_2",
+      "path": "generated/output/robot_vac_threshold_ramp_segment_2_of_3.stl",
+      "part_name": "segment_2",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 2,
+      "filament": 1,
+      "notes": "Middle ramp segment."
+    },
+    {
+      "name": "ramp_segment_3",
+      "path": "generated/output/robot_vac_threshold_ramp_segment_3_of_3.stl",
+      "part_name": "segment_3",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 3,
+      "filament": 1,
+      "notes": "Right ramp segment."
+    },
+    {
+      "name": "connector_key_1",
+      "path": "generated/output/robot_vac_threshold_ramp_connector_key.stl",
+      "part_name": "connector_key_1",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 3,
+      "filament": 1,
+      "notes": "Reusable underside key, copy 1 of 6."
+    },
+    {
+      "name": "connector_key_2",
+      "path": "generated/output/robot_vac_threshold_ramp_connector_key.stl",
+      "part_name": "connector_key_2",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 3,
+      "filament": 1,
+      "notes": "Reusable underside key, copy 2 of 6."
+    },
+    {
+      "name": "connector_key_3",
+      "path": "generated/output/robot_vac_threshold_ramp_connector_key.stl",
+      "part_name": "connector_key_3",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 3,
+      "filament": 1,
+      "notes": "Reusable underside key, copy 3 of 6."
+    },
+    {
+      "name": "connector_key_4",
+      "path": "generated/output/robot_vac_threshold_ramp_connector_key.stl",
+      "part_name": "connector_key_4",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 3,
+      "filament": 1,
+      "notes": "Reusable underside key, copy 4 of 6."
+    },
+    {
+      "name": "connector_key_5",
+      "path": "generated/output/robot_vac_threshold_ramp_connector_key.stl",
+      "part_name": "connector_key_5",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 3,
+      "filament": 1,
+      "notes": "Reusable underside key, copy 5 of 6."
+    },
+    {
+      "name": "connector_key_6",
+      "path": "generated/output/robot_vac_threshold_ramp_connector_key.stl",
+      "part_name": "connector_key_6",
+      "load_strategy": "separate_object",
+      "print_mode": "standalone",
+      "plate": 3,
+      "filament": 1,
+      "notes": "Reusable underside key, copy 6 of 6."
+    }
+  ],
+  "notes": [
+    "Single-color PETG project for Bambu A1.",
+    "Print ramp segments as separate objects because each segment is close to the A1 practical footprint.",
+    "Plate 3 combines segment 3 and six connector keys."
+  ]
+}

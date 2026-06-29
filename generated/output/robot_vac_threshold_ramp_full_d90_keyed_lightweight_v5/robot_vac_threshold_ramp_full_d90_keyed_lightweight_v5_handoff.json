@@ -1,0 +1,103 @@
+{
+  "name": "robot_vac_threshold_ramp_full_d90_keyed_lightweight_v5",
+  "units": "mm",
+  "target_printer": "Bambu Lab A1",
+  "print_intent": "three single-material plate files",
+  "slope_ratio": 4.75,
+  "assembly": {
+    "order": [
+      "left",
+      "middle",
+      "right"
+    ],
+    "straight_seam_clearance": 0.35,
+    "rounded_key_depth": 3.2,
+    "rounded_key_centers_y": [
+      -58.0,
+      -31.0
+    ],
+    "side_entry_curve_inset": 42.0,
+    "side_entry_slope_width": 48.0,
+    "side_entry_edge_height": 0.33,
+    "side_entry_fade_start_y": -25.0,
+    "protected_rear_fit_zone_y": -13.0,
+    "notes": "Uses two shallow rounded keyed seam bumps per join plus conservative underside relief; side-entry ramps fade out before the rear quarter-round fit zone."
+  },
+  "filament_saving": {
+    "underside_shell_thickness": 3.2,
+    "relief_peak_y": -24.0,
+    "relief_peak_z": 8.0,
+    "kept_solid": "outer side ramps, seam rails, front lip, rear quarter-round, and top surface"
+  },
+  "plates": [
+    {
+      "label": "left",
+      "stl": "robot_vac_threshold_ramp_full_d90_keyed_lightweight_v5_plate_1_left.stl",
+      "3mf": "robot_vac_threshold_ramp_full_d90_keyed_lightweight_v5_plate_1_left.3mf",
+      "triangles": 3706,
+      "bounds": {
+        "min": [
+          -114.842,
+          -45.0,
+          0.0
+        ],
+        "max": [
+          114.842,
+          45.0,
+          16.5
+        ],
+        "size": [
+          229.685,
+          90.0,
+          16.5
+        ]
+      }
+    },
+    {
+      "label": "middle",
+      "stl": "robot_vac_threshold_ramp_full_d90_keyed_lightweight_v5_plate_2_middle.stl",
+      "3mf": "robot_vac_threshold_ramp_full_d90_keyed_lightweight_v5_plate_2_middle.3mf",
+      "triangles": 3436,
+      "bounds": {
+        "min": [
+          -114.755,
+          -45.0,
+          0.0
+        ],
+        "max": [
+          114.755,
+          45.0,
+          16.5
+        ],
+        "size": [
+          229.51,
+          90.0,
+          16.5
+        ]
+      }
+    },
+    {
+      "label": "right",
+      "stl": "robot_vac_threshold_ramp_full_d90_keyed_lightweight_v5_plate_3_right.stl",
+      "3mf": "robot_vac_threshold_ramp_full_d90_keyed_lightweight_v5_plate_3_right.3mf",
+      "triangles": 3706,
+      "bounds": {
+        "min": [
+          -113.246,
+          -45.0,
+          0.0
+        ],
+        "max": [
+          113.246,
+          45.0,
+          16.5
+        ],
+        "size": [
+          226.492,
+          90.0,
+          16.5
+        ]
+      }
+    }
+  ]
+}

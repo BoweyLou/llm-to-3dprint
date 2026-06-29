@@ -29,8 +29,33 @@ from llm_to_3dprint.bambu import (
     write_cli_assemble_list,
 )
 from llm_to_3dprint.bambu_mcp import main as bambu_mcp_main
+from llm_to_3dprint.artifact_validation import (
+    format_artifact_validation_report,
+    validate_bambu_project_artifacts,
+)
+from llm_to_3dprint.blender_review import (
+    format_blender_review_plan,
+    run_blender_review,
+    write_blender_review_plan,
+)
 from llm_to_3dprint.brief import DesignBrief, preset_rectangular_enclosure
+from llm_to_3dprint.cad_skills import (
+    format_cad_skills_pilot_report,
+    format_cad_skills_probe,
+    probe_cad_skills,
+    run_cad_skills_pilot,
+    write_cad_skills_pilot_report,
+)
+from llm_to_3dprint.design_validation import (
+    format_design_validation_report,
+    validate_design_contract,
+)
 from llm_to_3dprint.fitcheck import FitCheckError, check_script_fit
+from llm_to_3dprint.mesh_drawers import (
+    build_mesh_preserved_drawers,
+    format_mesh_manifest_validation,
+    validate_mesh_manifest,
+)
 from llm_to_3dprint.prompting import build_generation_prompt
 from llm_to_3dprint.renderers import render_script
 
@@ -54,6 +79,12 @@ def build_parser() -> argparse.ArgumentParser:
     validate_parser = subparsers.add_parser("validate", help="Validate a design brief JSON file.")
     validate_parser.add_argument("brief", help="Path to the JSON brief.")
 
+    validate_design_parser = subparsers.add_parser(
+        "validate-design",
+        help="Validate the design-intent contract before CAD generation.",
+    )
+    validate_design_parser.add_argument("brief", help="Path to the JSON brief.")
+
     prompt_parser = subparsers.add_parser("prompt", help="Generate an LLM prompt from a brief.")
     prompt_parser.add_argument("brief", help="Path to the JSON brief.")
     prompt_parser.add_argument("--output", "-o", help="Optional file to write instead of stdout.")
@@ -61,6 +92,24 @@ def build_parser() -> argparse.ArgumentParser:
     render_parser = subparsers.add_parser("render", help="Render a starter Python CAD script.")
     render_parser.add_argument("brief", help="Path to the JSON brief.")
     render_parser.add_argument("--output", "-o", required=True, help="Path to the Python file to write.")
+
+    mesh_drawer_parser = subparsers.add_parser(
+        "build-mesh-drawers",
+        help="Build mesh-preserved drawer body/drawer STL and 3MF outputs from a brief.",
+    )
+    mesh_drawer_parser.add_argument("brief", help="Path to the JSON brief.")
+    mesh_drawer_parser.add_argument(
+        "--output-dir",
+        "-o",
+        required=True,
+        help="Directory for STL, 3MF, Bambu handoff, and mesh manifest outputs.",
+    )
+
+    mesh_manifest_parser = subparsers.add_parser(
+        "validate-mesh-manifest",
+        help="Validate source-triangle accounting for a mesh-preservation manifest.",
+    )
+    mesh_manifest_parser.add_argument("manifest", help="Path to the mesh manifest JSON file.")
 
     fit_parser = subparsers.add_parser(
         "check-fit",
@@ -85,6 +134,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Validate a Bambu Studio handoff JSON file.",
     )
     validate_bambu_parser.add_argument("project", help="Path to the Bambu handoff JSON file.")
+
+    validate_artifacts_parser = subparsers.add_parser(
+        "validate-artifacts",
+        help="Validate geometry artifact paths, mesh bounds, and bed fit before Bambu export.",
+    )
+    validate_artifacts_parser.add_argument("project", help="Path to the Bambu handoff JSON file.")
+    validate_artifacts_parser.add_argument(
+        "--require-mesh-metrics",
+        action="store_true",
+        help="Fail when STL/OBJ/3MF bounds or facets cannot be computed.",
+    )
 
     handoff_parser = subparsers.add_parser(
         "bambu-handoff",
@@ -228,6 +288,53 @@ def build_parser() -> argparse.ArgumentParser:
         help="Allow overwriting an existing captured seed template.",
     )
 
+    blender_review_parser = subparsers.add_parser(
+        "blender-review",
+        help="Write an optional Blender review plan and render script for Bambu handoff artifacts.",
+    )
+    blender_review_parser.add_argument("project", help="Path to the Bambu handoff JSON file.")
+    blender_review_parser.add_argument(
+        "--output-dir",
+        "-o",
+        required=True,
+        help="Directory for the Blender review JSON, Markdown report, script, and screenshots.",
+    )
+    blender_review_parser.add_argument(
+        "--blender",
+        help="Optional Blender executable path. Defaults to the blender executable on PATH when available.",
+    )
+    blender_review_parser.add_argument(
+        "--run",
+        action="store_true",
+        help="Run Blender after writing the review plan. Fails if Blender is unavailable.",
+    )
+
+    cad_skills_probe_parser = subparsers.add_parser(
+        "cad-skills-probe",
+        help="Check whether an external CAD Skills / text-to-cad checkout is configured.",
+    )
+    cad_skills_probe_parser.add_argument(
+        "--skill-dir",
+        help="Override TEXT_TO_CAD_SKILL_DIR for this probe.",
+    )
+
+    cad_skills_pilot_parser = subparsers.add_parser(
+        "cad-skills-pilot",
+        help="Prepare or run an explicit text-to-cad pilot through scripts/step and scripts/inspect.",
+    )
+    cad_skills_pilot_parser.add_argument("--generator", required=True, help="Path to the build123d generator file.")
+    cad_skills_pilot_parser.add_argument("--output-dir", "-o", required=True, help="Pilot output directory.")
+    cad_skills_pilot_parser.add_argument("--skill-dir", help="Override TEXT_TO_CAD_SKILL_DIR for this pilot.")
+    cad_skills_pilot_parser.add_argument(
+        "--report",
+        help="Optional JSON report path. Defaults to <output-dir>/cad_skills_pilot_report.json.",
+    )
+    cad_skills_pilot_parser.add_argument(
+        "--run",
+        action="store_true",
+        help="Execute scripts/step and scripts/inspect instead of writing a dry-run report.",
+    )
+
     subparsers.add_parser(
         "bambu-mcp-server",
         help="Run the Bambu stdio MCP server for end-to-end automation.",
@@ -261,6 +368,14 @@ def main() -> None:
         )
         return
 
+    if args.command == "validate-design":
+        brief = DesignBrief.load(args.brief)
+        report = validate_design_contract(brief)
+        print(format_design_validation_report(report))
+        if not report.passes:
+            raise SystemExit(1)
+        return
+
     if args.command == "prompt":
         brief = DesignBrief.load(args.brief)
         prompt = build_generation_prompt(brief)
@@ -276,6 +391,38 @@ def main() -> None:
         script = render_script(brief)
         write_text(args.output, script)
         print(f"Wrote script to {args.output}")
+        return
+
+    if args.command == "build-mesh-drawers":
+        brief = DesignBrief.load(args.brief)
+        result = build_mesh_preserved_drawers(brief, args.output_dir)
+        status = "PASS" if result.passes_triangle_accounting else "FAIL"
+        print(
+            f"{status} {brief.name}: source_facets={result.source_facet_count}, "
+            f"assigned={result.assigned_source_triangle_count}, "
+            f"duplicates={result.duplicate_source_triangle_count}, "
+            f"unassigned={result.unassigned_source_triangle_count}, "
+            f"geometry={'PASS' if result.passes_geometry_health else 'FAIL'}, "
+            f"clearance={'PASS' if result.functional_clearance_passes else 'FAIL'}, "
+            f"nonmanifold_parts={result.nonmanifold_part_count}, "
+            f"open_edges={result.open_edge_count}"
+        )
+        print(f"Wrote manifest to {result.manifest_path}")
+        print(f"Wrote mesh-preserved print 3MF to {result.combined_3mf_path}")
+        print(f"Wrote assembled preview 3MF to {result.assembled_preview_3mf_path}")
+        print(f"Wrote front review 3MF to {result.front_review_3mf_path}")
+        print(f"Wrote source-skin preview 3MF to {result.source_skin_preview_3mf_path}")
+        print(f"Wrote functional core 3MF to {result.functional_3mf_path}")
+        print(f"Wrote Bambu handoff to {result.bambu_project_path}")
+        if not result.passes_triangle_accounting:
+            raise SystemExit(1)
+        return
+
+    if args.command == "validate-mesh-manifest":
+        result = validate_mesh_manifest(args.manifest)
+        print(format_mesh_manifest_validation(result))
+        if not result["passes"]:
+            raise SystemExit(1)
         return
 
     if args.command == "check-fit":
@@ -307,6 +454,18 @@ def main() -> None:
             f"filaments={spec.filament_count}, parts={len(spec.parts)}, "
             f"backend={spec.export_backend}"
         )
+        return
+
+    if args.command == "validate-artifacts":
+        spec = BambuProjectSpec.load(args.project)
+        report = validate_bambu_project_artifacts(
+            spec,
+            base_dir=Path.cwd(),
+            require_mesh_metrics=args.require_mesh_metrics,
+        )
+        print(format_artifact_validation_report(report))
+        if not report.passes:
+            raise SystemExit(1)
         return
 
     if args.command == "bambu-handoff":
@@ -405,6 +564,45 @@ def main() -> None:
         )
         print(format_bambu_template_capture_result(result))
         if not result.success:
+            raise SystemExit(1)
+        return
+
+    if args.command == "blender-review":
+        spec = BambuProjectSpec.load(args.project)
+        plan = write_blender_review_plan(
+            spec,
+            args.output_dir,
+            base_dir=Path.cwd(),
+            blender_executable=args.blender,
+        )
+        print(format_blender_review_plan(plan))
+        if args.run:
+            result = run_blender_review(plan)
+            if result.error_text:
+                raise SystemExit(result.error_text)
+            if result.returncode != 0:
+                raise SystemExit(result.returncode)
+        return
+
+    if args.command == "cad-skills-probe":
+        probe = probe_cad_skills(args.skill_dir)
+        print(format_cad_skills_probe(probe))
+        if not probe.available:
+            raise SystemExit(1)
+        return
+
+    if args.command == "cad-skills-pilot":
+        report = run_cad_skills_pilot(
+            args.generator,
+            args.output_dir,
+            skill_dir=args.skill_dir,
+            run=args.run,
+        )
+        report_path = Path(args.report) if args.report else Path(args.output_dir) / "cad_skills_pilot_report.json"
+        write_cad_skills_pilot_report(report, report_path)
+        print(format_cad_skills_pilot_report(report))
+        print(f"Wrote CAD Skills pilot report to {report_path}")
+        if args.run and not report.passes:
             raise SystemExit(1)
         return
 
