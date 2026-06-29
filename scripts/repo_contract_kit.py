@@ -618,6 +618,39 @@ def target_list_payload(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     return payload, 0
 
 
+def target_dirty_report_payload(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
+    registry = read_target_registry()
+    entries = [target_registry_payload_status(entry) for entry in registry.get("targets") or []]
+    status_counts: dict[str, int] = {}
+    dirty_entries: list[dict[str, Any]] = []
+    for entry in entries:
+        status = str(entry.get("status") or "unknown")
+        status_counts[status] = status_counts.get(status, 0) + 1
+        if entry.get("dirty_count", 0):
+            dirty_entries.append(entry)
+    payload = {
+        "schema_version": 1,
+        "command": "target-dirty-report",
+        "registry": {
+            "path": str(target_registry_path()),
+            "target_count": len(entries),
+            "updated_at": registry.get("updated_at"),
+        },
+        "summary": {
+            "total": len(entries),
+            "dirty": len(dirty_entries),
+            "clean": status_counts.get("ready", 0),
+            "statuses": status_counts,
+        },
+        "targets": entries,
+        "dirty_targets": dirty_entries,
+        "target_repo_writes": target_repo_writes(False, reason="target dirty-report is read-only"),
+        "sidecar_writes": sidecar_writes(False, reason="target dirty-report is read-only"),
+        "exit_code": 0,
+    }
+    return payload, 0
+
+
 def target_import_payload(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     apply = bool(getattr(args, "apply", False)) and not bool(getattr(args, "dry_run", False))
     registry = read_target_registry()
@@ -1962,6 +1995,13 @@ def command_map_annotations() -> dict[tuple[str, ...], dict[str, Any]]:
                 public_command("target", "import", "--root", "/Volumes/Myrtle/Code/04_Code", "--apply", "--json"),
             ],
             "output_schema": "target_import_payload",
+        },
+        ("target", "dirty-report"): {
+            "audience": ["human", "agent"],
+            "mutation": "read-only",
+            "route_note": "Reports Git dirty state for every enrolled target without running update plans or writing target repos.",
+            "examples": [public_command("target", "dirty-report", "--json")],
+            "output_schema": "target_dirty_report_payload",
         },
         ("target", "doctor"): {
             "audience": ["human", "agent"],
@@ -9185,14 +9225,18 @@ def target_update_all_run_target(args: argparse.Namespace, entry: dict[str, Any]
         return result
 
     dirty_entries = git_status_entries(repo)
-    if apply and dirty_entries:
+    if dirty_entries:
+        status = "skipped-dirty" if apply else "dirty"
         result.update(
             {
-                "status": "skipped-dirty",
-                "exit_code": 1,
+                "status": status,
+                "exit_code": 1 if apply else 0,
                 "dirty_count": len(dirty_entries),
                 "dirty_files": sorted({item["path"] for item in dirty_entries}),
-                "target_repo_writes": target_repo_writes(False, reason="skipped dirty target before apply"),
+                "target_repo_writes": target_repo_writes(
+                    False,
+                    reason="skipped dirty target before apply" if apply else "classified dirty target before dry-run plan",
+                ),
             }
         )
         return result
@@ -9416,6 +9460,26 @@ def render_target_list(payload: dict[str, Any], style: str = "auto") -> None:
         print(f" - {status}: {count}")
     for item in payload.get("targets") or []:
         print(f"   - {item.get('status', 'unknown')}: {item.get('root')}")
+
+
+def render_target_dirty_report(payload: dict[str, Any], style: str = "auto") -> None:
+    summary = payload.get("summary") or {}
+    registry = payload.get("registry") or {}
+    print(styled_text(f"{PUBLIC_COMMAND} target dirty-report:", style, "1;36"))
+    print(f" - registry: {registry.get('path')}")
+    print(f" - targets: {summary.get('total', 0)}")
+    print(f" - dirty: {summary.get('dirty', 0)}")
+    print(f" - clean: {summary.get('clean', 0)}")
+    for status, count in sorted((summary.get("statuses") or {}).items()):
+        print(f" - {status}: {count}")
+    for item in payload.get("dirty_targets") or []:
+        files = item.get("dirty_files") or []
+        detail = f" ({len(files)} changed)" if files else ""
+        print(f"   - dirty: {item.get('root')}{detail}")
+        for path in files[:10]:
+            print(f"     - {path}")
+        if len(files) > 10:
+            print(f"     - ... {len(files) - 10} more")
 
 
 def render_target_import(payload: dict[str, Any], style: str = "auto") -> None:
@@ -10049,6 +10113,12 @@ def build_parser() -> argparse.ArgumentParser:
     target_list = target_subparsers.add_parser("list", help="List registered target repos used by batch updates.")
     target_list.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
     add_style_arg(target_list)
+    target_dirty_report = target_subparsers.add_parser(
+        "dirty-report",
+        help="Report Git dirty state across registered target repos without running update plans.",
+    )
+    target_dirty_report.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
+    add_style_arg(target_dirty_report)
     target_import = target_subparsers.add_parser(
         "import",
         help="Seed the registered target list from installed kit repos under a scan root.",
@@ -10261,6 +10331,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "target" and getattr(args, "target_command", "") == "list":
         payload, exit_code = target_list_payload(args)
         render_json(payload) if args.json else render_target_list(payload, style=render_style(args))
+        return exit_code
+    if args.command == "target" and getattr(args, "target_command", "") == "dirty-report":
+        payload, exit_code = target_dirty_report_payload(args)
+        render_json(payload) if args.json else render_target_dirty_report(payload, style=render_style(args))
         return exit_code
     if args.command == "target" and getattr(args, "target_command", "") == "import":
         payload, exit_code = target_import_payload(args)
